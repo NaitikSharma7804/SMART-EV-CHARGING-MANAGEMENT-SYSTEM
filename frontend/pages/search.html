@@ -1,0 +1,2723 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Chargers | EV Charge Hub</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/premium-ui.css">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="../js/notifications.js" defer></script>
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root {
+            --green: #22c55e;
+            --green-dark: #15803d;
+            --green-soft: #ecfdf3;
+            --green-glow: rgba(34, 197, 94, 0.25);
+            --dark: #101814;
+            --dark-2: #17221b;
+            --text: #17221b;
+            --text-muted: #627267;
+            --border: #e3eae5;
+            --border-hover: #bbf0cb;
+            --surface: #ffffff;
+            --surface-subtle: #f8faf8;
+            --background: #f4f7f5;
+            --blue: #2563eb;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            background: var(--background);
+            color: var(--text);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           TOPBAR
+        ========================================== */
+        .topbar {
+            height: 70px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-inner {
+            width: min(1300px, calc(100% - 32px));
+            height: 100%;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark);
+            text-decoration: none;
+            font-size: 1.08rem;
+            font-weight: 800;
+            letter-spacing: -0.015em;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #101814, #1b2e22);
+            color: var(--green);
+            border-radius: 11px;
+            box-shadow: 0 4px 12px rgba(16, 24, 20, 0.15);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border-radius: 10px;
+            color: #556259;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 650;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--green-dark);
+            background: var(--green-soft);
+        }
+
+        .nav-link.active {
+            color: var(--green-dark);
+            background: var(--green-soft);
+            box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.2);
+        }
+
+        /* =========================================
+           LAYOUT: SIDEBAR + MAP
+        ========================================== */
+        .search-layout {
+            display: grid;
+            grid-template-columns: 460px minmax(0, 1fr);
+            height: calc(100vh - 70px);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* =========================================
+           SIDEBAR
+        ========================================== */
+        .sidebar {
+            background: #fff;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-width: 0;
+            z-index: 20;
+            box-shadow: 4px 0 24px rgba(16, 24, 20, 0.04);
+            overflow: hidden;
+        }
+
+        /* Sticky Filter & Search Control Panel */
+        .sidebar-header-panel {
+            flex-shrink: 0;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 18px 20px 14px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+            max-height: 48vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-icon {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            background: var(--green-soft);
+            color: var(--green-dark);
+            border-radius: 11px;
+        }
+
+        .header-title h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        .header-title p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #f0fdf4;
+            color: var(--green-dark);
+            font-size: 0.7rem;
+            font-weight: 750;
+            border: 1px solid #dcfce7;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.6; }
+        }
+
+        /* Search Input */
+        .search-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .search-input-wrap .search-icon {
+            position: absolute;
+            left: 14px;
+            width: 17px;
+            height: 17px;
+            color: #8c9890;
+            pointer-events: none;
+        }
+
+        .search-input-wrap input {
+            width: 100%;
+            height: 44px;
+            padding: 0 40px 0 42px;
+            background: var(--surface-subtle);
+            border: 1.5px solid #d8e2dc;
+            border-radius: var(--radius-md);
+            font-size: 0.88rem;
+            font-family: inherit;
+            color: var(--text);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input-wrap input:focus {
+            background: #fff;
+            border-color: var(--green);
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+        }
+
+        .clear-search-btn {
+            position: absolute;
+            right: 12px;
+            background: #e2e8e4;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            color: #556058;
+            transition: all 0.15s ease;
+        }
+
+        .clear-search-btn:hover {
+            background: #cbd5ce;
+            color: #1a201c;
+        }
+
+        .clear-search-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* Sub-controls: Location + Filter Toggle */
+        .quick-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .location-btn {
+            flex: 1;
+            height: 38px;
+            background: var(--surface-subtle);
+            border: 1px solid #d5dfd9;
+            border-radius: 10px;
+            color: #2b3830;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .location-btn:hover {
+            background: #eef7f1;
+            border-color: #98e4af;
+            color: var(--green-dark);
+        }
+
+        .location-btn svg {
+            width: 15px;
+            height: 15px;
+            color: var(--blue);
+        }
+
+        .filter-toggle-btn {
+            height: 38px;
+            padding: 0 13px;
+            background: var(--surface-subtle);
+            border: 1px solid #d5dfd9;
+            border-radius: 10px;
+            color: #2b3830;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-toggle-btn:hover,
+        .filter-toggle-btn.active {
+            background: var(--green-soft);
+            border-color: #86efac;
+            color: var(--green-dark);
+        }
+
+        .filter-badge {
+            background: var(--green);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 999px;
+            font-weight: 800;
+        }
+
+        /* =========================================
+           ADVANCED FILTER ACCORDION / CARD
+        ========================================== */
+        .filters-container {
+            background: #fafcfb;
+            border: 1px solid #e1ece5;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transition: all 0.25s ease;
+        }
+
+        .filters-container.collapsed {
+            display: none;
+        }
+
+        .filter-section-title {
+            font-size: 0.76rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #5d6d62;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        /* Distance Radio Cards */
+        .distance-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .distance-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 4px;
+            border: 1.5px solid #d9e3dc;
+            background: #fff;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 750;
+            color: #4b574f;
+            transition: all 0.18s ease;
+            user-select: none;
+        }
+
+        .distance-label input[type="radio"] {
+            display: none;
+        }
+
+        .distance-label:hover {
+            border-color: #8ce3a8;
+            background: #f7fdf9;
+        }
+
+        .distance-label.selected,
+        .distance-label input[type="radio"]:checked + span,
+        .distance-label:has(input[type="radio"]:checked) {
+            background: #ecfdf3;
+            border-color: var(--green);
+            color: var(--green-dark);
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+        }
+
+        /* Connector Checkboxes */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 7px;
+        }
+
+        .custom-checkbox-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: #fff;
+            border: 1.5px solid #dce5df;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            user-select: none;
+        }
+
+        .custom-checkbox-card:hover {
+            border-color: #8ce3a8;
+            background: #f8fdfa;
+        }
+
+        .custom-checkbox-card input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #a4b3aa;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            background: #fff;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .custom-checkbox-card input[type="checkbox"]:checked {
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        .custom-checkbox-card input[type="checkbox"]:checked::after {
+            content: "";
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg) translate(-1px, -1px);
+        }
+
+        .custom-checkbox-card:has(input[type="checkbox"]:checked) {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        .checkbox-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .checkbox-info strong {
+            font-size: 0.8rem;
+            color: #1d2822;
+            font-weight: 750;
+        }
+
+        .checkbox-info span {
+            font-size: 0.67rem;
+            color: #728076;
+        }
+
+        /* Power Chips */
+        .power-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .power-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 4px;
+            background: #fff;
+            border: 1.5px solid #dce5df;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            user-select: none;
+            text-align: center;
+        }
+
+        .power-card:hover {
+            border-color: #8ce3a8;
+            background: #f8fdfa;
+        }
+
+        .power-card input[type="checkbox"] {
+            display: none;
+        }
+
+        .power-card:has(input[type="checkbox"]:checked) {
+            background: #ecfdf3;
+            border-color: var(--green);
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
+        }
+
+        .power-card strong {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #1d2822;
+        }
+
+        .power-card span {
+            font-size: 0.65rem;
+            color: #728076;
+            margin-top: 1px;
+        }
+
+        .power-card:has(input[type="checkbox"]:checked) strong {
+            color: var(--green-dark);
+        }
+
+        /* Availability Switch Card */
+        .availability-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #fff;
+            border: 1.5px solid #dce5df;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            user-select: none;
+        }
+
+        .availability-card:hover {
+            border-color: #8ce3a8;
+        }
+
+        .availability-card:has(input[type="checkbox"]:checked) {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        .avail-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .avail-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+        }
+
+        .avail-text strong {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 750;
+            color: #1d2822;
+        }
+
+        .avail-text span {
+            font-size: 0.68rem;
+            color: #6d7b72;
+        }
+
+        /* Toggle switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 38px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5ce;
+            transition: .25s;
+            border-radius: 22px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .25s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .slider {
+            background-color: var(--green);
+        }
+
+        .toggle-switch input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Price Range Slider */
+        .slider-wrap {
+            padding: 4px 2px 2px;
+        }
+
+        .price-display-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.78rem;
+        }
+
+        .price-val-tag {
+            background: #ecfdf3;
+            color: var(--green-dark);
+            border: 1px solid #bbf7d0;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.76rem;
+        }
+
+        input[type="range"].price-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: #dce5df;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"].price-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--green-dark);
+            border: 2px solid #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        input[type="range"].price-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: var(--green);
+        }
+
+        .slider-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.68rem;
+            color: #85928a;
+            margin-top: 5px;
+        }
+
+        /* Rating Stars */
+        .rating-selector-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            border: 1.5px solid #dce5df;
+            border-radius: 10px;
+            padding: 8px 12px;
+        }
+
+        .stars-row {
+            display: flex;
+            gap: 4px;
+        }
+
+        .star-btn {
+            background: none;
+            border: none;
+            padding: 2px;
+            cursor: pointer;
+            color: #d1d5db;
+            transition: all 0.15s ease;
+        }
+
+        .star-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .star-btn.active,
+        .star-btn.hover {
+            color: #f59e0b;
+        }
+
+        .rating-label-display {
+            font-size: 0.78rem;
+            font-weight: 750;
+            color: #2b362f;
+        }
+
+        /* Filter Action Buttons */
+        .filter-action-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .apply-btn {
+            height: 42px;
+            background: linear-gradient(135deg, var(--green), var(--green-dark));
+            border: none;
+            border-radius: 11px;
+            color: white;
+            font-weight: 800;
+            font-size: 0.84rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(21, 128, 61, 0.22);
+            transition: all 0.2s ease;
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(21, 128, 61, 0.3);
+        }
+
+        .reset-btn {
+            height: 42px;
+            padding: 0 14px;
+            background: #fff;
+            border: 1.5px solid #d2dcd5;
+            border-radius: 11px;
+            color: #556259;
+            font-weight: 750;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .reset-btn:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: #fff5f5;
+        }
+
+        /* Active Filter Badges Row */
+        .active-filters-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed #e2e8e4;
+        }
+
+        .active-filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            background: #ecfdf3;
+            border: 1px solid #bbf7d0;
+            border-radius: 7px;
+            color: var(--green-dark);
+            font-size: 0.7rem;
+            font-weight: 750;
+        }
+
+        .active-filter-chip button {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: var(--green-dark);
+            display: grid;
+            place-items: center;
+        }
+
+        .active-filter-chip button:hover {
+            color: var(--red);
+        }
+
+        .clear-all-filters-btn {
+            background: none;
+            border: none;
+            color: #8c9890;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 4px 6px;
+        }
+
+        .clear-all-filters-btn:hover {
+            color: var(--red);
+        }
+
+        /* =========================================
+           RESULTS LIST
+        ========================================== */
+        .station-list {
+            flex: 1;
+            padding: 16px 20px 24px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .results-meta-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 0 2px;
+        }
+
+        .results-meta-header strong {
+            font-size: 0.8rem;
+            color: #435047;
+        }
+
+        .results-meta-header span {
+            font-size: 0.72rem;
+            color: #7b8880;
+            background: #eef3f0;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-weight: 750;
+        }
+
+        /* Smart Recommendation Elements on Search Page */
+        .smart-sort-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: #ffffff;
+            border: 1.5px solid #d1fae5;
+            color: #059669;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 750;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .smart-sort-toggle-btn:hover,
+        .smart-sort-toggle-btn.active {
+            background: #ecfdf5;
+            border-color: #10b981;
+            color: #047857;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
+        }
+
+        .smart-rec-card-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+        }
+
+        .smart-rec-match {
+            font-size: 0.74rem;
+            font-weight: 900;
+            color: #047857;
+            background: #d1fae5;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .smart-rec-tag {
+            font-size: 0.72rem;
+            font-weight: 750;
+            color: #15803d;
+        }
+
+        .smart-rec-reasons-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin: 8px 0;
+            padding: 8px 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .smart-rec-reason-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.73rem;
+            color: #334155;
+            font-weight: 600;
+        }
+
+        .smart-rec-check {
+            color: #10b981;
+            font-weight: 900;
+            font-size: 11px;
+        }
+
+        /* =========================================
+           ENHANCED STATION CARD
+        ========================================== */
+        .station-card {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 14px rgba(16, 24, 20, 0.035);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .station-card:hover {
+            transform: translateY(-2px);
+            border-color: #9ee6b8;
+            box-shadow: 0 10px 26px rgba(16, 24, 20, 0.08);
+        }
+
+        .station-card.active {
+            border-color: var(--green);
+            background: #f7fff9;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12), 0 10px 26px rgba(16, 24, 20, 0.07);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .card-title-area h3 {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: #17221b;
+            line-height: 1.25;
+            letter-spacing: -0.015em;
+        }
+
+        .card-address {
+            font-size: 0.74rem;
+            color: #69776e;
+            margin-top: 3px;
+        }
+
+        .card-actions-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #d97706;
+            padding: 3px 7px;
+            border-radius: 7px;
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+
+        .rating-badge svg {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+
+        .favorite-station-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            font-size: 15px;
+            line-height: 1;
+            color: #94a3b8;
+            transition: all 0.2s ease;
+        }
+
+        .favorite-station-btn:hover {
+            background: #fff1f2;
+            border-color: #fecdd3;
+            color: #ef4444;
+            transform: scale(1.12);
+        }
+
+        .favorite-station-btn.active {
+            background: #fff1f2;
+            border-color: #fecdd3;
+            color: #ef4444;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+        }
+
+        /* Meta tags row */
+        .card-meta-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 0.73rem;
+            color: #66766d;
+        }
+
+        .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .meta-item svg {
+            width: 13px;
+            height: 13px;
+            color: #8c9b91;
+        }
+
+        /* Spec Pills: Connectors, Speed, Price */
+        .specs-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .connector-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 7px;
+            border-radius: 6px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            font-size: 0.68rem;
+            font-weight: 750;
+        }
+
+        .power-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 3px 7px;
+            border-radius: 6px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            font-size: 0.68rem;
+            font-weight: 750;
+        }
+
+        .power-pill svg {
+            width: 11px;
+            height: 11px;
+        }
+
+        .price-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 7px;
+            border-radius: 6px;
+            background: #fdf4ff;
+            border: 1px solid #f5d0fe;
+            color: #86198f;
+            font-size: 0.68rem;
+            font-weight: 750;
+        }
+
+        /* Amenities Row */
+        .amenities-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .amenity-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 7px;
+            border-radius: 6px;
+            background: #f5f8f6;
+            border: 1px solid #e5ece7;
+            color: #556259;
+            font-size: 0.66rem;
+            font-weight: 650;
+        }
+
+        .amenity-chip svg {
+            width: 11px;
+            height: 11px;
+            color: var(--blue);
+        }
+
+        /* Card Footer */
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 11px;
+            border-top: 1px dashed #e5ede8;
+        }
+
+        .availability-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+
+        .availability-badge.available {
+            color: #15803d;
+        }
+
+        .availability-badge.busy {
+            color: #d97706;
+        }
+
+        .availability-badge.unavailable {
+            color: #dc2626;
+        }
+
+        .status-dot-sm {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .availability-badge.available .status-dot-sm {
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+        }
+
+        .availability-badge.busy .status-dot-sm {
+            background: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+        }
+
+        .book-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 33px;
+            padding: 0 13px;
+            border-radius: 9px;
+            background: var(--dark);
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.73rem;
+            font-weight: 800;
+            transition: all 0.2s ease;
+        }
+
+        .book-btn:hover {
+            background: var(--green-dark);
+            transform: translateY(-1px);
+        }
+
+        .book-btn svg {
+            width: 13px;
+            height: 13px;
+        }
+
+        /* State Box (Empty / Loading / Error) */
+        .state-box {
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px 20px;
+            color: #728277;
+        }
+
+        .state-icon {
+            width: 50px;
+            height: 50px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: #eef4f0;
+            color: #556259;
+            margin-bottom: 12px;
+        }
+
+        .state-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .state-box strong {
+            display: block;
+            color: #2b362f;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .state-box p {
+            max-width: 280px;
+            font-size: 0.76rem;
+            line-height: 1.5;
+            color: #728076;
+            margin-bottom: 12px;
+        }
+
+        .state-box .reset-filters-inline-btn {
+            background: var(--green-soft);
+            border: 1px solid #86efac;
+            color: var(--green-dark);
+            font-weight: 800;
+            font-size: 0.78rem;
+            padding: 8px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* =========================================
+           MAP PANEL
+        ========================================== */
+        .map-panel {
+            position: relative;
+            height: 100%;
+            min-width: 0;
+            background: #e8eee9;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            z-index: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(16, 24, 20, 0.08);
+            color: #3b4740;
+            font-size: 0.75rem;
+            font-weight: 750;
+            pointer-events: none;
+        }
+
+        .map-overlay svg {
+            width: 16px;
+            height: 16px;
+            color: var(--green-dark);
+        }
+
+        .map-location-btn {
+            position: absolute;
+            right: 20px;
+            bottom: 24px;
+            z-index: 500;
+            width: 44px;
+            height: 44px;
+            border: 1px solid #dce4de;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.96);
+            color: #313d35;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(16, 24, 20, 0.12);
+            transition: all 0.2s ease;
+        }
+
+        .map-location-btn:hover {
+            color: var(--green-dark);
+            transform: translateY(-2px);
+        }
+
+        .map-location-btn svg {
+            width: 19px;
+            height: 19px;
+        }
+
+        /* Leaflet Popups */
+        .leaflet-popup-content-wrapper {
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(16, 24, 20, 0.16);
+            padding: 2px;
+        }
+
+        .leaflet-popup-content {
+            margin: 14px;
+            line-height: 1.4;
+        }
+
+        .popup-name {
+            font-size: 0.94rem;
+            font-weight: 800;
+            color: #17221b;
+            margin-bottom: 4px;
+        }
+
+        .popup-address {
+            font-size: 0.73rem;
+            color: #6a7970;
+            margin-bottom: 8px;
+        }
+
+        .popup-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .popup-chip {
+            font-size: 0.64rem;
+            font-weight: 750;
+            padding: 2px 6px;
+            border-radius: 5px;
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .popup-book {
+            display: block;
+            text-align: center;
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: var(--green);
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.74rem;
+            font-weight: 800;
+            transition: background 0.15s ease;
+        }
+
+        .popup-book:hover {
+            background: var(--green-dark);
+        }
+
+        /* =========================================
+           RESPONSIVE MOBILE
+        ========================================== */
+        @media (max-width: 950px) {
+            .search-layout {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                height: auto;
+                max-height: none;
+            }
+
+            .sidebar-header-panel {
+                max-height: none;
+            }
+
+            .station-list {
+                max-height: 480px;
+            }
+
+            .map-panel {
+                height: 400px;
+                min-height: 400px;
+            }
+
+            #map {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .distance-group {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .power-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================================
+         NAVBAR
+    ========================================== -->
+    <header class="topbar">
+        <div class="nav-inner">
+            <a href="dashboard.html" class="brand">
+                <span class="brand-icon">
+                    <i data-lucide="zap"></i>
+                </span>
+                <span>EV Charge Hub</span>
+            </a>
+
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-link">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="search.html" class="nav-link active">
+                    <i data-lucide="map-pin"></i>
+                    <span>Find Chargers</span>
+                </a>
+                <a href="bookings.html" class="nav-link">
+                    <i data-lucide="calendar-check"></i>
+                    <span>My Bookings</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- =========================================
+         SEARCH & FILTER LAYOUT
+    ========================================== -->
+    <div class="search-layout">
+
+        <!-- =====================================
+             SIDEBAR CONTROLS & RESULTS
+        ====================================== -->
+        <aside class="sidebar">
+
+            <!-- Sticky Header Control Panel -->
+            <div class="sidebar-header-panel">
+                <div class="header-top">
+                    <div class="header-title">
+                        <div class="header-icon">
+                            <i data-lucide="search"></i>
+                        </div>
+                        <div>
+                            <h1>Find Chargers</h1>
+                            <p>Discover EV charging stations near you</p>
+                        </div>
+                    </div>
+                    <div class="status-pill">
+                        <span class="status-dot"></span>
+                        Live
+                    </div>
+                </div>
+
+                <!-- 1. Search Bar -->
+                <div class="search-input-wrap">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input
+                        type="text"
+                        id="stationSearchInput"
+                        placeholder="Search station, Pune, area..."
+                        oninput="handleSearchInputChange(event)"
+                        onkeydown="handleSearchKeyDown(event)"
+                    />
+                    <button
+                        type="button"
+                        id="clearSearchBtn"
+                        class="clear-search-btn"
+                        style="display:none;"
+                        onclick="clearSearchInput()"
+                        title="Clear search"
+                    >
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+
+                <!-- Quick Action Row -->
+                <div class="quick-controls">
+                    <button type="button" class="location-btn" onclick="locateUser()">
+                        <i data-lucide="crosshair"></i>
+                        My Location
+                    </button>
+                    <button
+                        type="button"
+                        id="filterToggleBtn"
+                        class="filter-toggle-btn active"
+                        onclick="toggleFilterPanel()"
+                    >
+                        <i data-lucide="sliders-horizontal"></i>
+                        <span>Filters</span>
+                        <span class="filter-badge" id="activeFilterBadge" style="display:none;">0</span>
+                    </button>
+                </div>
+
+                <!-- 2. ADVANCED FILTERS PANEL -->
+                <div class="filters-container" id="advancedFilterPanel">
+
+                    <!-- Filter: Distance -->
+                    <div class="filter-section">
+                        <div class="filter-section-title">
+                            <span>Distance</span>
+                            <span id="selectedDistanceLabel" style="font-size:0.7rem; color:var(--green-dark); text-transform:none;">10 km</span>
+                        </div>
+                        <div class="distance-group">
+                            <label class="distance-label">
+                                <input type="radio" name="distanceFilter" value="5" onchange="onFilterChange()" />
+                                <span>5 km</span>
+                            </label>
+                            <label class="distance-label selected">
+                                <input type="radio" name="distanceFilter" value="10" checked onchange="onFilterChange()" />
+                                <span>10 km</span>
+                            </label>
+                            <label class="distance-label">
+                                <input type="radio" name="distanceFilter" value="25" onchange="onFilterChange()" />
+                                <span>25 km</span>
+                            </label>
+                            <label class="distance-label">
+                                <input type="radio" name="distanceFilter" value="all" onchange="onFilterChange()" />
+                                <span>Any</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Filter: Connector -->
+                    <div class="filter-section">
+                        <div class="filter-section-title">
+                            <span>Connector</span>
+                            <span style="font-size:0.68rem; color:#85928a; text-transform:none;">Select all that apply</span>
+                        </div>
+                        <div class="checkbox-grid">
+                            <label class="custom-checkbox-card">
+                                <input type="checkbox" name="connectorFilter" value="CCS2" onchange="onFilterChange()" />
+                                <div class="checkbox-info">
+                                    <strong>CCS2</strong>
+                                    <span>DC Fast</span>
+                                </div>
+                            </label>
+                            <label class="custom-checkbox-card">
+                                <input type="checkbox" name="connectorFilter" value="Type 2" onchange="onFilterChange()" />
+                                <div class="checkbox-info">
+                                    <strong>Type 2</strong>
+                                    <span>AC Standard</span>
+                                </div>
+                            </label>
+                            <label class="custom-checkbox-card">
+                                <input type="checkbox" name="connectorFilter" value="CHAdeMO" onchange="onFilterChange()" />
+                                <div class="checkbox-info">
+                                    <strong>CHAdeMO</strong>
+                                    <span>DC Fast</span>
+                                </div>
+                            </label>
+                            <label class="custom-checkbox-card">
+                                <input type="checkbox" name="connectorFilter" value="GB/T" onchange="onFilterChange()" />
+                                <div class="checkbox-info">
+                                    <strong>GB/T</strong>
+                                    <span>Bharat Standard</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Filter: Power -->
+                    <div class="filter-section">
+                        <div class="filter-section-title">
+                            <span>Power Speed</span>
+                        </div>
+                        <div class="power-grid">
+                            <label class="power-card">
+                                <input type="checkbox" name="powerFilter" value="7" onchange="onFilterChange()" />
+                                <strong>7 kW</strong>
+                                <span>Standard AC</span>
+                            </label>
+                            <label class="power-card">
+                                <input type="checkbox" name="powerFilter" value="22" onchange="onFilterChange()" />
+                                <strong>22 kW</strong>
+                                <span>Fast AC</span>
+                            </label>
+                            <label class="power-card">
+                                <input type="checkbox" name="powerFilter" value="60+" onchange="onFilterChange()" />
+                                <strong>60 kW+</strong>
+                                <span>Rapid DC</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Filter: Availability -->
+                    <div class="filter-section">
+                        <label class="availability-card">
+                            <div class="avail-left">
+                                <span class="avail-dot"></span>
+                                <div class="avail-text">
+                                    <strong>Available now</strong>
+                                    <span>Show only stations with ready chargers</span>
+                                </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="availableNowFilter" onchange="onFilterChange()" />
+                                <span class="slider"></span>
+                            </label>
+                        </label>
+                    </div>
+
+                    <!-- Filter: Price Range -->
+                    <div class="filter-section">
+                        <div class="filter-section-title">
+                            <span>Price (₹ / hr)</span>
+                            <span class="price-val-tag" id="priceValDisplay">Up to ₹35 / hr</span>
+                        </div>
+                        <div class="slider-wrap">
+                            <input
+                                type="range"
+                                class="price-slider"
+                                id="priceRangeSlider"
+                                min="8"
+                                max="35"
+                                step="1"
+                                value="35"
+                                oninput="handlePriceSliderInput(event)"
+                                onchange="onFilterChange()"
+                            />
+                            <div class="slider-scale-labels">
+                                <span>₹8</span>
+                                <span>₹15</span>
+                                <span>₹25</span>
+                                <span>₹35+</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter: Rating -->
+                    <div class="filter-section">
+                        <div class="filter-section-title">
+                            <span>Minimum Rating</span>
+                            <span class="rating-label-display" id="ratingLabelDisplay">Any Rating</span>
+                        </div>
+                        <div class="rating-selector-bar">
+                            <div class="stars-row" id="ratingStarsRow">
+                                <button type="button" class="star-btn" data-star="1" onclick="selectStarRating(1)" title="1+ Star">
+                                    <i data-lucide="star"></i>
+                                </button>
+                                <button type="button" class="star-btn" data-star="2" onclick="selectStarRating(2)" title="2+ Stars">
+                                    <i data-lucide="star"></i>
+                                </button>
+                                <button type="button" class="star-btn" data-star="3" onclick="selectStarRating(3)" title="3+ Stars">
+                                    <i data-lucide="star"></i>
+                                </button>
+                                <button type="button" class="star-btn" data-star="4" onclick="selectStarRating(4)" title="4+ Stars">
+                                    <i data-lucide="star"></i>
+                                </button>
+                                <button type="button" class="star-btn" data-star="5" onclick="selectStarRating(5)" title="5 Stars">
+                                    <i data-lucide="star"></i>
+                                </button>
+                            </div>
+                            <button
+                                type="button"
+                                style="background:none;border:none;color:#85928a;font-size:0.7rem;cursor:pointer;"
+                                onclick="selectStarRating(0)"
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Action Buttons -->
+                    <div class="filter-action-row">
+                        <button type="button" class="apply-btn" onclick="applyFilters()">
+                            <i data-lucide="check"></i>
+                            Apply Filters
+                        </button>
+                        <button type="button" class="reset-btn" onclick="resetFilters()">
+                            <i data-lucide="rotate-ccw"></i>
+                            Reset
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Active Filter Tags Bar -->
+                <div class="active-filters-bar" id="activeFilterTagsBar" style="display:none;"></div>
+            </div>
+
+            <!-- Station Results Container -->
+            <div class="station-list" id="stationListContainer">
+                <div class="state-box">
+                    <div class="state-icon">
+                        <i data-lucide="loader" class="spin"></i>
+                    </div>
+                    <strong>Finding charging stations</strong>
+                    <p>Connecting to the EV Charge Hub server...</p>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- =====================================
+             MAP PANEL
+        ====================================== -->
+        <section class="map-panel">
+            <div class="map-overlay">
+                <i data-lucide="map"></i>
+                <span id="mapOverlayStatus">Charging stations & nearby amenities</span>
+            </div>
+
+            <button
+                type="button"
+                class="map-location-btn"
+                onclick="locateUser()"
+                title="Use my location"
+            >
+                <i data-lucide="locate-fixed"></i>
+            </button>
+
+            <div id="map"></div>
+        </section>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/api.js"></script>
+    <script src="../js/favorites.js"></script>
+
+    <script>
+        /* =========================================
+           STATE & CONFIGURATION
+        ========================================== */
+        let userLat = 18.5204;
+        let userLng = 73.8567;
+        let map = null;
+        let markers = [];
+        let allStationsData = [];
+        let currentFilteredStations = [];
+        const amenityCache = {};
+
+        // Active filter state
+        let filterState = {
+            search: "",
+            distance: "10",
+            connectors: [],
+            powers: [],
+            availableNow: false,
+            maxPrice: 35,
+            minRating: 0,
+            smartRecommendation: false
+        };
+
+        let userLocationMarker = null;
+
+        /* =========================================
+           INITIALIZATION
+        ========================================== */
+        document.addEventListener("DOMContentLoaded", () => {
+            initMap();
+            initUrlParams();
+            lucide.createIcons();
+            locateUser();
+        });
+
+        function initMap() {
+            map = L.map("map").setView([userLat, userLng], 13);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "&copy; OpenStreetMap contributors"
+            }).addTo(map);
+        }
+
+        function initUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has("search")) {
+                const searchVal = urlParams.get("search");
+                document.getElementById("stationSearchInput").value = searchVal;
+                filterState.search = searchVal;
+                document.getElementById("clearSearchBtn").style.display = "grid";
+            }
+            if (urlParams.has("connector")) {
+                const con = urlParams.get("connector");
+                filterState.connectors = [con];
+                const cb = document.querySelector(`input[name="connectorFilter"][value="${con}"]`);
+                if (cb) cb.checked = true;
+            }
+            if (urlParams.has("sort") && (urlParams.get("sort") === "smart" || urlParams.get("sort") === "recommended")) {
+                filterState.smartRecommendation = true;
+            }
+        }
+
+        function toggleSmartSort() {
+            filterState.smartRecommendation = !filterState.smartRecommendation;
+            applyFilters();
+        }
+
+        /* =========================================
+           LOAD STATIONS FROM BACKEND
+        ========================================== */
+        async function loadStations() {
+            const listEl = document.getElementById("stationListContainer");
+            listEl.innerHTML = `
+                <div class="state-box">
+                    <div class="state-icon">
+                        <i data-lucide="loader" class="spin"></i>
+                    </div>
+                    <strong>Finding charging stations</strong>
+                    <p>Fetching stations from the API server...</p>
+                </div>
+            `;
+            lucide.createIcons();
+
+            try {
+                // Fetch full city & expressway coverage so user can filter instantly across 5km, 10km, 25km, or all
+                const radiusParam = 100;
+                const url = `http://localhost:5000/api/stations?lat=${userLat}&lng=${userLng}&radius=${radiusParam}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                const stations = data.stations || data.data || [];
+
+                allStationsData = stations;
+                applyFilters();
+            } catch (error) {
+                console.error("Station loading error:", error);
+                listEl.innerHTML = `
+                    <div class="state-box error">
+                        <div class="state-icon" style="background:#fef2f2;color:#ef4444;">
+                            <i data-lucide="server-crash"></i>
+                        </div>
+                        <strong style="color:#991b1b;">Server connection error</strong>
+                        <p>Make sure your backend server is running on port 5000 and try again.</p>
+                        <button type="button" class="reset-filters-inline-btn" onclick="loadStations()">
+                            <i data-lucide="rotate-ccw"></i> Retry
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        /* =========================================
+           APPLY FILTERS (Dynamic & Reactive)
+        ========================================== */
+        function applyFilters() {
+            // Read inputs
+            const searchVal = document.getElementById("stationSearchInput").value.trim();
+            filterState.search = searchVal;
+
+            const selectedDistRadio = document.querySelector('input[name="distanceFilter"]:checked');
+            filterState.distance = selectedDistRadio ? selectedDistRadio.value : "10";
+
+            const selectedConnectors = Array.from(
+                document.querySelectorAll('input[name="connectorFilter"]:checked')
+            ).map(cb => cb.value);
+            filterState.connectors = selectedConnectors;
+
+            const selectedPowers = Array.from(
+                document.querySelectorAll('input[name="powerFilter"]:checked')
+            ).map(cb => cb.value);
+            filterState.powers = selectedPowers;
+
+            filterState.availableNow = document.getElementById("availableNowFilter").checked;
+            filterState.maxPrice = Number(document.getElementById("priceRangeSlider").value);
+
+            // Filter calculation
+            currentFilteredStations = allStationsData.filter(s => {
+                // 1. Text Search
+                if (filterState.search) {
+                    const q = filterState.search.toLowerCase();
+                    const name = (s.name || "").toLowerCase();
+                    const addr = (s.address || "").toLowerCase();
+                    const city = (s.city || "").toLowerCase();
+                    const op = (s.operator_name || "").toLowerCase();
+                    if (!name.includes(q) && !addr.includes(q) && !city.includes(q) && !op.includes(q)) {
+                        return false;
+                    }
+                }
+
+                // 2. Distance
+                if (filterState.distance !== "all" && s.distance !== null && s.distance !== undefined) {
+                    const maxDist = Number(filterState.distance);
+                    if (Number(s.distance) > maxDist) return false;
+                }
+
+                // 3. Connectors
+                if (filterState.connectors.length > 0) {
+                    const stationConnectors = (s.connectors || []).map(c => c.toLowerCase());
+                    const matchesAnyConnector = filterState.connectors.some(c =>
+                        stationConnectors.includes(c.toLowerCase())
+                    );
+                    if (!matchesAnyConnector) return false;
+                }
+
+                // 4. Power Speed
+                if (filterState.powers.length > 0) {
+                    const stationPowers = s.powers || [];
+                    const matchesPower = filterState.powers.some(tier => {
+                        if (tier === "7") return stationPowers.some(p => p >= 6 && p <= 11);
+                        if (tier === "22") return stationPowers.some(p => p >= 12 && p <= 30);
+                        if (tier === "60+") return stationPowers.some(p => p >= 50);
+                        return false;
+                    });
+                    if (!matchesPower) return false;
+                }
+
+                // 5. Available now
+                if (filterState.availableNow) {
+                    const avail = Number(s.available_chargers || s.available || 0);
+                    if (avail <= 0) return false;
+                }
+
+                // 6. Max Price
+                if (filterState.maxPrice < 35) {
+                    const stationPrice = Number(s.min_price || s.price || 0);
+                    if (stationPrice > filterState.maxPrice) return false;
+                }
+
+                // 7. Rating
+                if (filterState.minRating > 0) {
+                    const r = Number(s.rating || 0);
+                    if (r < filterState.minRating) return false;
+                }
+
+                return true;
+            });
+
+            // Smart Recommendation Scoring & Sorting
+            if (filterState.smartRecommendation) {
+                let userVehicle = null;
+                try {
+                    const storedV = localStorage.getItem("ev_vehicles");
+                    if (storedV) {
+                        const parsed = JSON.parse(storedV);
+                        if (Array.isArray(parsed) && parsed.length > 0) userVehicle = parsed[0];
+                    }
+                } catch (e) {}
+
+                const userConnector = userVehicle ? (userVehicle.connector_type || 'CCS2') : (filterState.connectors[0] || 'CCS2');
+
+                currentFilteredStations.forEach(s => {
+                    const connectors = Array.isArray(s.connectors) ? s.connectors : (s.connector_types_str ? s.connector_types_str.split(',').map(x => x.trim()) : ['CCS2']);
+                    const maxPower = Number(s.max_power_kw || (s.powers && s.powers.length ? Math.max(...s.powers) : 60));
+                    const minPrice = Number(s.min_price || s.price || 15);
+                    const available = Number(s.available_chargers ?? s.available ?? 1);
+                    const total = Number(s.total_chargers || 4);
+                    const rating = Number(s.rating || 4.5);
+                    const distance = Number(s.distance !== null && s.distance !== undefined ? s.distance : 5.0);
+
+                    let score = 0;
+                    const reasons = [];
+
+                    // 1. Connector Match (30 pts)
+                    const connMatch = connectors.some(c => c.toLowerCase().includes(userConnector.toLowerCase()) || userConnector.toLowerCase().includes(c.toLowerCase()));
+                    if (connMatch) {
+                        score += 30;
+                        reasons.push(`Compatible with ${userVehicle ? (userVehicle.vehicle_name || userVehicle.vehicle_model) : 'your vehicle'} (${userConnector})`);
+                    } else {
+                        reasons.push(`Requires adapter (${connectors.slice(0, 2).join(', ')} available)`);
+                    }
+
+                    // 2. Availability (25 pts)
+                    if (available > 0) {
+                        const availPts = Math.round(15 + (available / Math.max(total, 1)) * 10);
+                        score += availPts;
+                        reasons.push(`Charger available now (${available} of ${total} free)`);
+                    } else {
+                        reasons.push(`High demand — chargers occupied`);
+                    }
+
+                    // 3. Proximity (20 pts)
+                    if (distance <= 3.0) {
+                        score += 20;
+                        reasons.push(`Very close — ${distance.toFixed(1)} km away`);
+                    } else if (distance <= 7.0) {
+                        score += 16;
+                        reasons.push(`Nearby location (${distance.toFixed(1)} km away)`);
+                    } else {
+                        score += 10;
+                        reasons.push(`Within driving range (${distance.toFixed(1)} km away)`);
+                    }
+
+                    // 4. Power (15 pts)
+                    if (maxPower >= 60) {
+                        score += 15;
+                        reasons.push(`Fast DC charging (${maxPower} kW)`);
+                    } else {
+                        score += 8;
+                        reasons.push(`Standard charging (${maxPower} kW)`);
+                    }
+
+                    // 5. Price (10 pts)
+                    if (minPrice <= 15) {
+                        score += 10;
+                        reasons.push(`Within preferred price (₹${minPrice}/hr)`);
+                    } else {
+                        score += 6;
+                        reasons.push(`Affordable rate (₹${minPrice}/hr)`);
+                    }
+
+                    // 6. Rating (10 pts)
+                    if (rating >= 4.5) {
+                        score += 10;
+                        reasons.push(`Top-rated station (${rating} ★)`);
+                    } else {
+                        score += 6;
+                        reasons.push(`Well-rated by drivers (${rating} ★)`);
+                    }
+
+                    s.score = Math.min(100, score);
+                    s.match_percentage = `${s.score}% Match`;
+                    s.reasons = reasons;
+                });
+
+                currentFilteredStations.sort((a, b) => (b.score || 0) - (a.score || 0));
+            }
+
+            renderActiveFilterBadges();
+            renderStations(currentFilteredStations);
+        }
+
+        /* =========================================
+           RENDER STATIONS & MAP MARKERS
+        ========================================== */
+        async function renderStations(stations) {
+            const listEl = document.getElementById("stationListContainer");
+
+            // Remove existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            if (stations.length === 0) {
+                listEl.innerHTML = `
+                    <div class="state-box">
+                        <div class="state-icon">
+                            <i data-lucide="map-pin-off"></i>
+                        </div>
+                        <strong>No matching stations found</strong>
+                        <p>No EV charging stations match your current filters. Try expanding your search distance or clearing some filters.</p>
+                        <button type="button" class="reset-filters-inline-btn" onclick="resetFilters()">
+                            <i data-lucide="rotate-ccw"></i> Reset Filters
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+                document.getElementById("mapOverlayStatus").textContent = "0 stations match filters";
+                return;
+            }
+
+            document.getElementById("mapOverlayStatus").textContent = `${stations.length} stations found`;
+
+            let htmlContent = `
+                <div class="results-meta-header">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <strong>Charging Stations</strong>
+                        <span>${stations.length} found</span>
+                    </div>
+                    <button type="button" class="smart-sort-toggle-btn ${filterState.smartRecommendation ? 'active' : ''}" onclick="toggleSmartSort()">
+                        <i data-lucide="sparkles" style="width:13px;height:13px;"></i>
+                        <span>${filterState.smartRecommendation ? '🧠 Smart Match Active' : '🧠 Sort by Smart Match'}</span>
+                    </button>
+                </div>
+            `;
+
+            for (let index = 0; index < stations.length; index++) {
+                const s = stations[index];
+                const lat = parseFloat(s.latitude || s.lat);
+                const lng = parseFloat(s.longitude || s.lng);
+
+                const distance = s.distance !== undefined && s.distance !== null
+                    ? Number(s.distance).toFixed(1) + " km"
+                    : "Nearby";
+
+                const available = Number(s.available_chargers ?? s.available ?? 1);
+                const isFav = isStationFavorite(s.id);
+                const connectors = s.connectors || ["CCS2"];
+                const maxPower = s.max_power_kw || (s.powers && s.powers.length ? Math.max(...s.powers) : 60);
+                const minPrice = s.min_price || s.price || 15;
+                const maxPrice = s.max_price || minPrice;
+                const priceStr = minPrice === maxPrice ? `₹${minPrice}/hr` : `₹${minPrice} - ₹${maxPrice}/hr`;
+
+                // Fetch amenities
+                const amenities = await fetchLiveAmenities(lat, lng);
+
+                /* -------------------------------------
+                   LEAFLET MAP MARKER
+                -------------------------------------- */
+                if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                    const stationIcon = L.divIcon({
+                        className: "custom-map-pin",
+                        html: `
+                            <div style="
+                                background: ${available > 0 ? '#22c55e' : '#f59e0b'};
+                                color: #fff;
+                                width: 38px;
+                                height: 38px;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+                                border: 3px solid #fff;
+                                font-size: 14px;
+                            ">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                                </svg>
+                            </div>
+                        `,
+                        iconSize: [38, 38],
+                        iconAnchor: [19, 19],
+                        popupAnchor: [0, -20]
+                    });
+
+                    const marker = L.marker([lat, lng], { icon: stationIcon })
+                        .addTo(map)
+                        .bindPopup(`
+                            <div style="min-width: 190px;">
+                                <div class="popup-name">${escapeHtml(s.name || "Charging Station")}</div>
+                                <div class="popup-address">${escapeHtml(s.address || "Station location")}</div>
+                                <div class="popup-chips">
+                                    ${connectors.map(c => `<span class="popup-chip">${escapeHtml(c)}</span>`).join('')}
+                                    <span class="popup-chip" style="background:#eff6ff;color:#1e40af;border-color:#bfdbfe;">⚡ ${maxPower}kW</span>
+                                    <span class="popup-chip" style="background:#fdf4ff;color:#86198f;border-color:#f5d0fe;">${priceStr}</span>
+                                </div>
+                                <a href="booking.html?station_id=${encodeURIComponent(s.id)}" class="popup-book">
+                                    Book Slot
+                                </a>
+                            </div>
+                        `);
+
+                    marker.stationId = s.id;
+                    marker.stationIndex = index;
+                    markers.push(marker);
+
+                    // Add amenity markers
+                    amenities.forEach(a => {
+                        const emoji = a.type === "cafe" ? "☕" : "🍔";
+                        const amenityIcon = L.divIcon({
+                            className: "amenity-pin",
+                            html: `
+                                <div style="
+                                    background: #2563eb;
+                                    color: white;
+                                    width: 28px;
+                                    height: 28px;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+                                    border: 2px solid white;
+                                    font-size: 11px;
+                                ">${emoji}</div>
+                            `,
+                            iconSize: [28, 28],
+                            iconAnchor: [14, 14],
+                            popupAnchor: [0, -14]
+                        });
+
+                        const aMarker = L.marker([a.lat, a.lng], { icon: amenityIcon })
+                            .addTo(map)
+                            .bindPopup(`<b>${escapeHtml(a.name)}</b><br><small>${escapeHtml(a.label)}</small>`);
+                        markers.push(aMarker);
+                    });
+                }
+
+                /* -------------------------------------
+                   STATION CARD HTML
+                -------------------------------------- */
+                const availClass = available > 0 ? 'available' : 'busy';
+                const availText = available > 0 ? `${available} Available` : 'All Occupied';
+
+                htmlContent += `
+                    <div class="station-card" id="card-${index}" onclick="focusStation(${lat}, ${lng}, ${index})">
+                        <div class="card-top">
+                            <div class="card-title-area">
+                                <h3>${escapeHtml(s.name || "EV Charging Station")}</h3>
+                                <div class="card-address">${escapeHtml(s.address || "Pune")}</div>
+                            </div>
+                            <div class="card-actions-top">
+                                <button
+                                    type="button"
+                                    class="favorite-station-btn ${isFav ? 'active' : ''}"
+                                    id="fav-btn-${s.id}"
+                                    data-station-id="${s.id}"
+                                    onclick="handleToggleStationFavorite(event, ${s.id})"
+                                    title="${isFav ? 'Remove from favorites' : 'Add to favorites'}"
+                                    aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}"
+                                >
+                                    <span class="heart-symbol">${isFav ? '♥' : '♡'}</span>
+                                </button>
+                                <span class="rating-badge">
+                                    <i data-lucide="star"></i>
+                                    ${Number(s.rating || 4.5).toFixed(1)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="card-meta-row">
+                            <span class="meta-item">
+                                <i data-lucide="navigation"></i>
+                                ${distance}
+                            </span>
+                            <span class="meta-item">
+                                <i data-lucide="clock-3"></i>
+                                ${escapeHtml(s.operating_hours || "24/7")}
+                            </span>
+                        </div>
+
+                        ${(filterState.smartRecommendation && s.reasons && s.reasons.length > 0) ? `
+                            <div class="smart-rec-card-badge">
+                                <span class="smart-rec-match">${s.match_percentage || (s.score ? s.score + '%' : 'Top Match')}</span>
+                                <span class="smart-rec-tag">🧠 Recommended for You</span>
+                            </div>
+                            <div class="smart-rec-reasons-preview">
+                                ${s.reasons.slice(0, 3).map(r => `
+                                    <div class="smart-rec-reason-item">
+                                        <span class="smart-rec-check">✓</span>
+                                        <span>${escapeHtml(r)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <!-- Connector, Power & Price Tags -->
+                        <div class="specs-row">
+                            ${connectors.map(c => `
+                                <span class="connector-pill">
+                                    <i data-lucide="zap" style="width:10px;height:10px;"></i>
+                                    ${escapeHtml(c)}
+                                </span>
+                            `).join('')}
+                            <span class="power-pill">
+                                <i data-lucide="gauge"></i>
+                                ${maxPower} kW
+                            </span>
+                            <span class="price-pill">
+                                ${priceStr}
+                            </span>
+                        </div>
+
+                        <!-- Amenities -->
+                        <div class="amenities-row">
+                            ${amenities.map(a => `
+                                <span class="amenity-chip">
+                                    <i data-lucide="${a.icon}"></i>
+                                    ${escapeHtml(a.label)}
+                                </span>
+                            `).join('')}
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="availability-badge ${availClass}">
+                                <span class="status-dot-sm"></span>
+                                ${availText}
+                            </div>
+                            <a
+                                href="booking.html?station_id=${encodeURIComponent(s.id)}"
+                                class="book-btn"
+                                onclick="event.stopPropagation()"
+                            >
+                                <span>Book Slot</span>
+                                <i data-lucide="arrow-up-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+
+            listEl.innerHTML = htmlContent;
+            lucide.createIcons();
+
+            // Fit map to visible station markers
+            const stationMarkers = markers.filter(m => m.stationId !== undefined);
+            if (stationMarkers.length > 0) {
+                const group = new L.featureGroup(stationMarkers);
+                map.fitBounds(group.getBounds().pad(0.15), { animate: true });
+            }
+        }
+
+        /* =========================================
+           ACTIVE FILTER TAGS
+        ========================================== */
+        function renderActiveFilterBadges() {
+            const container = document.getElementById("activeFilterTagsBar");
+            const countBadge = document.getElementById("activeFilterBadge");
+            let tags = [];
+            let activeCount = 0;
+
+            if (filterState.search) {
+                activeCount++;
+                tags.push(`
+                    <span class="active-filter-chip">
+                        "${escapeHtml(filterState.search)}"
+                        <button type="button" onclick="clearSearchInput()">×</button>
+                    </span>
+                `);
+            }
+
+            if (filterState.distance !== "10" && filterState.distance !== "all") {
+                activeCount++;
+                tags.push(`
+                    <span class="active-filter-chip">
+                        ${filterState.distance} km
+                        <button type="button" onclick="setDistanceFilter('10')">×</button>
+                    </span>
+                `);
+            } else if (filterState.distance === "all") {
+                activeCount++;
+                tags.push(`
+                    <span class="active-filter-chip">
+                        Any Distance
+                        <button type="button" onclick="setDistanceFilter('10')">×</button>
+                    </span>
+                `);
+            }
+
+            filterState.connectors.forEach(con => {
+                activeCount++;
+                tags.push(`
+                    <span class="active-filter-chip">
+                        ${escapeHtml(con)}
+                        <button type="button" onclick="removeConnectorFilter('${escapeHtml(con)}')">×</button>
+                    </span>
+                `);
+            });
+
+            filterState.powers.forEach(p => {
+                activeCount++;
+                const label = p === '60+' ? '60 kW+' : `${p} kW`;
+                tags.push(`
+                    <span class="active-filter-chip">
+                        ${label}
+                        <button type="button" onclick="removePowerFilter('${p}')">×</button>
+                    </span>
+                `);
+            });
+
+            if (filterState.availableNow) {
+                activeCount++;
+                tags.push(`
+                    <span class="active-filter-chip">
+                        Available now
+                        <button type="button" onclick="toggleAvailableNow(false)">×</button>
+                    </span>
+                `);
+            }
+
+            if (filterState.maxPrice < 35) {
+                activeCount++;
+                tags.push(`
+                    <span class="active-filter-chip">
+                        ≤ ₹${filterState.maxPrice}/hr
+                        <button type="button" onclick="setPriceFilter(35)">×</button>
+                    </span>
+                `);
+            }
+
+            if (filterState.minRating > 0) {
+                activeCount++;
+                tags.push(`
+                    <span class="active-filter-chip">
+                        ≥ ${filterState.minRating}★
+                        <button type="button" onclick="selectStarRating(0)">×</button>
+                    </span>
+                `);
+            }
+
+            if (tags.length > 0) {
+                tags.push(`
+                    <button type="button" class="clear-all-filters-btn" onclick="resetFilters()">
+                        Clear all
+                    </button>
+                `);
+                container.innerHTML = tags.join("");
+                container.style.display = "flex";
+            } else {
+                container.innerHTML = "";
+                container.style.display = "none";
+            }
+
+            if (activeCount > 0) {
+                countBadge.textContent = activeCount;
+                countBadge.style.display = "inline-block";
+            } else {
+                countBadge.style.display = "none";
+            }
+        }
+
+        /* =========================================
+           INPUT EVENT HANDLERS
+        ========================================== */
+        let searchDebounce = null;
+        function handleSearchInputChange(e) {
+            const val = e.target.value;
+            const clearBtn = document.getElementById("clearSearchBtn");
+            clearBtn.style.display = val ? "grid" : "none";
+
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(() => {
+                applyFilters();
+            }, 250);
+        }
+
+        function handleSearchKeyDown(e) {
+            if (e.key === "Enter") {
+                clearTimeout(searchDebounce);
+                applyFilters();
+            }
+        }
+
+        function clearSearchInput() {
+            const input = document.getElementById("stationSearchInput");
+            input.value = "";
+            document.getElementById("clearSearchBtn").style.display = "none";
+            applyFilters();
+        }
+
+        function onFilterChange() {
+            // Update distance label display
+            const distRadio = document.querySelector('input[name="distanceFilter"]:checked');
+            const distLabel = document.getElementById("selectedDistanceLabel");
+            if (distRadio && distLabel) {
+                distLabel.textContent = distRadio.value === "all" ? "Any" : `${distRadio.value} km`;
+                document.querySelectorAll(".distance-label").forEach(l => l.classList.remove("selected"));
+                distRadio.closest(".distance-label")?.classList.add("selected");
+            }
+            applyFilters();
+        }
+
+        function handlePriceSliderInput(e) {
+            const val = e.target.value;
+            const display = document.getElementById("priceValDisplay");
+            display.textContent = val >= 35 ? "Up to ₹35+ / hr" : `Up to ₹${val} / hr`;
+        }
+
+        function selectStarRating(rating) {
+            filterState.minRating = rating;
+            const label = document.getElementById("ratingLabelDisplay");
+            label.textContent = rating > 0 ? `${rating}.0+ Stars` : "Any Rating";
+
+            const starBtns = document.querySelectorAll("#ratingStarsRow .star-btn");
+            starBtns.forEach(btn => {
+                const s = Number(btn.getAttribute("data-star"));
+                btn.classList.toggle("active", s <= rating);
+            });
+
+            applyFilters();
+        }
+
+        function setDistanceFilter(val) {
+            const radio = document.querySelector(`input[name="distanceFilter"][value="${val}"]`);
+            if (radio) {
+                radio.checked = true;
+                onFilterChange();
+            }
+        }
+
+        function removeConnectorFilter(connectorVal) {
+            const cb = document.querySelector(`input[name="connectorFilter"][value="${connectorVal}"]`);
+            if (cb) {
+                cb.checked = false;
+                applyFilters();
+            }
+        }
+
+        function removePowerFilter(powerVal) {
+            const cb = document.querySelector(`input[name="powerFilter"][value="${powerVal}"]`);
+            if (cb) {
+                cb.checked = false;
+                applyFilters();
+            }
+        }
+
+        function toggleAvailableNow(checked) {
+            const cb = document.getElementById("availableNowFilter");
+            if (cb) {
+                cb.checked = checked;
+                applyFilters();
+            }
+        }
+
+        function setPriceFilter(val) {
+            const slider = document.getElementById("priceRangeSlider");
+            if (slider) {
+                slider.value = val;
+                handlePriceSliderInput({ target: slider });
+                applyFilters();
+            }
+        }
+
+        function resetFilters() {
+            clearSearchInput();
+
+            // Distance
+            setDistanceFilter("10");
+
+            // Connectors
+            document.querySelectorAll('input[name="connectorFilter"]').forEach(cb => cb.checked = false);
+
+            // Power
+            document.querySelectorAll('input[name="powerFilter"]').forEach(cb => cb.checked = false);
+
+            // Availability
+            document.getElementById("availableNowFilter").checked = false;
+
+            // Price
+            const slider = document.getElementById("priceRangeSlider");
+            slider.value = 35;
+            handlePriceSliderInput({ target: slider });
+
+            // Rating
+            selectStarRating(0);
+
+            applyFilters();
+        }
+
+        function toggleFilterPanel() {
+            const panel = document.getElementById("advancedFilterPanel");
+            const btn = document.getElementById("filterToggleBtn");
+            panel.classList.toggle("collapsed");
+            btn.classList.toggle("active", !panel.classList.contains("collapsed"));
+        }
+
+        /* =========================================
+           CARD FOCUS & MAP INTERACTION
+        ========================================== */
+        function focusStation(lat, lng, index) {
+            document.querySelectorAll(".station-card").forEach(c => c.classList.remove("active"));
+            const card = document.getElementById(`card-${index}`);
+            if (card) card.classList.add("active");
+
+            if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                map.setView([lat, lng], 15, { animate: true });
+                const marker = markers.find(m => m.stationIndex === index);
+                if (marker) marker.openPopup();
+            }
+        }
+
+        /* =========================================
+           USER GEOLOCATION
+        ========================================== */
+        function locateUser() {
+            if (!("geolocation" in navigator)) {
+                loadStations();
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    userLat = pos.coords.latitude;
+                    userLng = pos.coords.longitude;
+                    map.setView([userLat, userLng], 13);
+
+                    if (userLocationMarker) {
+                        map.removeLayer(userLocationMarker);
+                    }
+
+                    userLocationMarker = L.circleMarker([userLat, userLng], {
+                        color: "#2563eb",
+                        fillColor: "#3b82f6",
+                        fillOpacity: 0.85,
+                        radius: 8,
+                        weight: 3
+                    }).addTo(map).bindPopup("<b>You are here</b>");
+
+                    loadStations();
+                },
+                err => {
+                    console.warn("Geolocation fallback to default Pune coordinates:", err);
+                    loadStations();
+                },
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 }
+            );
+        }
+
+        /* =========================================
+           AMENITIES HELPER (Cached)
+        ========================================== */
+        async function fetchLiveAmenities(sLat, sLng) {
+            const cacheKey = `${sLat.toFixed(3)}_${sLng.toFixed(3)}`;
+            if (amenityCache[cacheKey]) return amenityCache[cacheKey];
+
+            const defaultAmenities = [
+                { type: "cafe", icon: "coffee", name: "Nearby Cafe", lat: sLat + 0.001, lng: sLng + 0.001, label: "Cafe (180m)" },
+                { type: "restaurant", icon: "utensils", name: "Local Dining", lat: sLat - 0.001, lng: sLng + 0.001, label: "Dining (310m)" }
+            ];
+            amenityCache[cacheKey] = defaultAmenities;
+            return defaultAmenities;
+        }
+
+        /* =========================================
+           FAVORITE STATIONS HANDLER
+        ========================================== */
+        function handleToggleStationFavorite(event, stationId) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            const numericId = Number(stationId);
+            const station = allStationsData.find(st => Number(st.id) === numericId) || {};
+            toggleFavoriteStation(numericId, station);
+        }
+
+        window.addEventListener("favoritesChanged", event => {
+            const { stationId, isFavorite } = event.detail;
+            const buttons = document.querySelectorAll(`.favorite-station-btn[data-station-id="${stationId}"]`);
+            buttons.forEach(btn => {
+                btn.classList.toggle("active", isFavorite);
+                const symbol = btn.querySelector(".heart-symbol");
+                if (symbol) {
+                    symbol.textContent = isFavorite ? "♥" : "♡";
+                }
+                btn.title = isFavorite ? "Remove from favorites" : "Add to favorites";
+                btn.setAttribute("aria-label", btn.title);
+            });
+        });
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

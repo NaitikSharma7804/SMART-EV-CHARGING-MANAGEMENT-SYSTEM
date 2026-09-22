@@ -1,0 +1,4798 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My Bookings | EV Charge Hub</title>
+
+    <!-- Existing CSS -->
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/premium-ui.css"
+    >
+
+    <!-- Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="../js/notifications.js" defer></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f5f8f6;
+            color: #101814;
+            font-family:
+                Inter,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+        }
+
+        /* =========================================================
+           NAVBAR
+        ========================================================= */
+
+        .premium-navbar {
+
+            height: 76px;
+
+            background: #ffffff;
+
+            border-bottom:
+                1px solid #e5ebe7;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding:
+                0 6vw;
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 1000;
+        }
+
+        .premium-logo {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            text-decoration: none;
+
+            color: #101814;
+
+            font-size: 22px;
+
+            font-weight: 800;
+        }
+
+        .logo-icon {
+
+            width: 42px;
+
+            height: 42px;
+
+            border-radius: 12px;
+
+            background: #dcfce7;
+
+            color: #16a34a;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+
+            width: 23px;
+
+            height: 23px;
+        }
+
+        .premium-nav {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+        }
+
+        .premium-nav a,
+        .logout-button {
+
+            border: none;
+
+            background: transparent;
+
+            color: #34423b;
+
+            text-decoration: none;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            padding:
+                11px 17px;
+
+            border-radius: 11px;
+
+            cursor: pointer;
+
+            transition:
+                .2s ease;
+        }
+
+        .premium-nav a:hover,
+        .logout-button:hover {
+
+            background: #f0fdf4;
+
+            color: #15803d;
+        }
+
+        .premium-nav a.active {
+
+            background: #ecfdf3;
+
+            color: #15803d;
+        }
+
+        /* =========================================================
+           PAGE
+        ========================================================= */
+
+        .page-container {
+
+            width: min(
+                1240px,
+                92%
+            );
+
+            margin:
+                0 auto;
+
+            padding:
+                48px 0 80px;
+        }
+
+        .breadcrumb {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            color: #829089;
+
+            font-size: 13px;
+
+            margin-bottom: 24px;
+        }
+
+        .breadcrumb a {
+
+            color: #5e6d65;
+
+            text-decoration: none;
+
+            font-weight: 600;
+        }
+
+        .breadcrumb svg {
+
+            width: 15px;
+
+            height: 15px;
+        }
+
+        .page-heading {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-end;
+
+            gap: 20px;
+
+            margin-bottom: 30px;
+        }
+
+        .heading-left h1 {
+
+            margin: 0;
+
+            font-size: 42px;
+
+            line-height: 1.05;
+
+            letter-spacing: -1.6px;
+
+            color: #0b1712;
+        }
+
+        .heading-left p {
+
+            margin:
+                10px 0 0;
+
+            color: #718078;
+
+            font-size: 15px;
+        }
+
+        .find-charger-button {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 8px;
+
+            text-decoration: none;
+
+            background: #15803d;
+
+            color: white;
+
+            border-radius: 12px;
+
+            padding:
+                13px 18px;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            box-shadow:
+                0 8px 20px
+                rgba(21, 128, 61, .16);
+
+            transition:
+                .2s ease;
+        }
+
+        .find-charger-button:hover {
+
+            background: #166534;
+
+            transform:
+                translateY(-1px);
+        }
+
+        .find-charger-button svg {
+
+            width: 17px;
+
+            height: 17px;
+        }
+
+        /* =========================================================
+           STATS
+        ========================================================= */
+
+        .booking-stats {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 16px;
+
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+
+            background: white;
+
+            border:
+                1px solid #e3eae6;
+
+            border-radius: 18px;
+
+            padding: 20px;
+
+            min-height: 145px;
+
+            box-shadow:
+                0 5px 18px
+                rgba(16, 24, 20, .035);
+        }
+
+        .stat-icon {
+
+            width: 42px;
+
+            height: 42px;
+
+            border-radius: 12px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 16px;
+        }
+
+        .stat-icon.green {
+
+            background: #ecfdf3;
+
+            color: #15803d;
+        }
+
+        .stat-icon.blue {
+
+            background: #eff6ff;
+
+            color: #2563eb;
+        }
+
+        .stat-icon.orange {
+
+            background: #fff7ed;
+
+            color: #ea580c;
+        }
+
+        .stat-icon svg {
+
+            width: 21px;
+
+            height: 21px;
+        }
+
+        .stat-label {
+
+            color: #74827b;
+
+            font-size: 13px;
+
+            margin-bottom: 4px;
+        }
+
+        .stat-number {
+
+            font-size: 27px;
+
+            font-weight: 800;
+
+            color: #0b1712;
+        }
+
+        /* =========================================================
+           TOOLBAR
+        ========================================================= */
+
+        .bookings-toolbar {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 16px;
+
+            margin-bottom: 18px;
+        }
+
+        .tabs-wrapper {
+
+            background: white;
+
+            border:
+                1px solid #e3eae6;
+
+            padding: 5px;
+
+            border-radius: 13px;
+
+            display: inline-flex;
+
+            gap: 4px;
+        }
+
+        .tab-btn {
+
+            border: none;
+
+            background: transparent;
+
+            color: #66756d;
+
+            padding:
+                10px 17px;
+
+            border-radius: 9px;
+
+            font-weight: 700;
+
+            font-size: 13px;
+
+            cursor: pointer;
+
+            transition:
+                .2s ease;
+        }
+
+        .tab-btn:hover {
+
+            color: #15803d;
+
+            background: #f0fdf4;
+        }
+
+        .tab-btn.active {
+
+            color: #15803d;
+
+            background: #ecfdf3;
+        }
+
+        .refresh-button {
+
+            border:
+                1px solid #dce5df;
+
+            background: white;
+
+            color: #334139;
+
+            padding:
+                11px 16px;
+
+            border-radius: 11px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+        .refresh-button:hover {
+
+            border-color: #b7c9bd;
+
+            background: #fbfdfc;
+        }
+
+        .refresh-button svg {
+
+            width: 17px;
+
+            height: 17px;
+        }
+
+        /* =========================================================
+           BOOKING LIST
+        ========================================================= */
+
+        .bookings-section {
+
+            background: white;
+
+            border:
+                1px solid #e2e9e5;
+
+            border-radius: 20px;
+
+            padding: 22px;
+
+            min-height: 300px;
+
+            box-shadow:
+                0 6px 24px
+                rgba(16, 24, 20, .035);
+        }
+
+        .section-top {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding-bottom: 18px;
+
+            border-bottom:
+                1px solid #edf1ee;
+
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+
+            font-size: 16px;
+
+            font-weight: 800;
+
+            color: #152019;
+        }
+
+        .session-count {
+
+            color: #839088;
+
+            font-size: 13px;
+        }
+
+        /* =========================================================
+           BOOKING CARD
+        ========================================================= */
+
+        .booking-card {
+
+            border:
+                1px solid #e5ebe7;
+
+            border-radius: 17px;
+
+            padding: 19px;
+
+            margin-bottom: 13px;
+
+            background: #ffffff;
+
+            transition:
+                .2s ease;
+        }
+
+        .booking-card:hover {
+
+            border-color: #cddbd2;
+
+            box-shadow:
+                0 7px 22px
+                rgba(16, 24, 20, .05);
+
+            transform:
+                translateY(-1px);
+        }
+
+        .booking-card:last-child {
+
+            margin-bottom: 0;
+        }
+
+        .booking-main {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-start;
+
+            gap: 20px;
+        }
+
+        .station-area {
+
+            display: flex;
+
+            gap: 13px;
+
+            min-width: 0;
+        }
+
+        .station-icon {
+
+            flex:
+                0 0 46px;
+
+            width: 46px;
+
+            height: 46px;
+
+            border-radius: 13px;
+
+            background: #ecfdf3;
+
+            color: #15803d;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+        .station-icon svg {
+
+            width: 21px;
+
+            height: 21px;
+        }
+
+        .station-content {
+
+            min-width: 0;
+        }
+
+        .station-content h3 {
+
+            margin:
+                1px 0 6px;
+
+            font-size: 16px;
+
+            color: #111a15;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+        .booking-id {
+
+            font-size: 11px;
+
+            color: #89958e;
+
+            margin-bottom: 7px;
+        }
+
+        .booking-id strong {
+
+            color: #5f6e66;
+        }
+
+        .status-badge {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            border-radius: 30px;
+
+            padding:
+                6px 10px;
+
+            font-size: 11px;
+
+            font-weight: 800;
+        }
+
+        .status-dot {
+
+            width: 6px;
+
+            height: 6px;
+
+            border-radius: 50%;
+        }
+
+        .status-upcoming {
+
+            background: #eff6ff;
+
+            color: #2563eb;
+        }
+
+        .status-upcoming .status-dot {
+
+            background: #3b82f6;
+        }
+
+        .status-completed {
+
+            background: #ecfdf3;
+
+            color: #15803d;
+        }
+
+        .status-completed .status-dot {
+
+            background: #22c55e;
+        }
+
+        .status-cancelled {
+
+            background: #fef2f2;
+
+            color: #dc2626;
+        }
+
+        .status-cancelled .status-dot {
+
+            background: #ef4444;
+        }
+
+        .status-pending {
+
+            background: #fff7ed;
+
+            color: #c2410c;
+        }
+
+        .status-pending .status-dot {
+
+            background: #f59e0b;
+        }
+
+        .amount-area {
+
+            text-align: right;
+
+            flex:
+                0 0 auto;
+        }
+
+        .amount {
+
+            font-size: 17px;
+
+            font-weight: 800;
+
+            color: #101814;
+
+            margin-bottom: 8px;
+        }
+
+        /* =========================================================
+   PAYMENT SUMMARY
+========================================================= */
+
+.payment-summary {
+    min-width: 190px;
+    text-align: right;
+}
+
+.payment-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+}
+
+.payment-label {
+    font-size: 11px;
+    color: #7a8981;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.payment-amount {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111814;
+}
+
+.payment-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #ecfdf3;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.payment-status.unpaid {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.simulated-cost-box {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    text-align: right;
+}
+
+.simulated-cost-label {
+    font-size: 11px;
+    color: #527064;
+    font-weight: 600;
+}
+
+.simulated-cost-value {
+    margin-top: 2px;
+    font-size: 17px;
+    font-weight: 800;
+    color: #15803d;
+}
+
+.simulated-cost-note {
+    margin-top: 3px;
+    font-size: 9px;
+    line-height: 1.35;
+    color: #6b7d73;
+}
+
+.session-cost-details {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #edf1ee;
+}
+
+.session-cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.session-cost-row:first-child {
+    margin-top: 0;
+}
+
+.session-cost-row span:first-child {
+    color: #718078;
+}
+
+.session-cost-row strong {
+    color: #17221c;
+}
+
+.session-cost-row.simulated strong {
+    color: #15803d;
+}
+
+@media (max-width: 700px) {
+
+    .payment-summary {
+        width: 100%;
+        min-width: 0;
+        text-align: left;
+        margin-top: 15px;
+    }
+
+    .payment-main {
+        align-items: flex-start;
+    }
+
+    .simulated-cost-box {
+        text-align: left;
+    }
+
+}
+
+        .booking-details {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 9px;
+
+            margin-top: 18px;
+
+            padding-top: 15px;
+
+            border-top:
+                1px solid #edf1ee;
+        }
+
+        .detail-pill {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            padding:
+                8px 11px;
+
+            border-radius: 9px;
+
+            background: #f7faf8;
+
+            color: #5f6e66;
+
+            font-size: 12px;
+
+            font-weight: 600;
+        }
+
+        .detail-pill svg {
+
+            width: 14px;
+
+            height: 14px;
+
+            color: #15803d;
+        }
+
+        .booking-actions {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 8px;
+
+            margin-top: 14px;
+        }
+
+        .action-btn {
+
+            border:
+                1px solid #dfe7e2;
+
+            background: white;
+
+            color: #34423b;
+
+            border-radius: 9px;
+
+            padding:
+                8px 11px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+
+            background: #f7faf8;
+
+            border-color: #c8d6cd;
+        }
+
+        .action-btn.green {
+
+            border-color: #bbf7d0;
+
+            color: #15803d;
+
+            background: #f0fdf4;
+        }
+
+        .action-btn.red {
+
+            border-color: #fecaca;
+
+            color: #dc2626;
+
+            background: #fffafa;
+        }
+
+        .action-btn svg {
+
+            width: 14px;
+
+            height: 14px;
+        }
+
+        /* =========================================================
+           LOADING
+        ========================================================= */
+
+        .loading-state {
+
+            min-height: 260px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: #718078;
+
+            text-align: center;
+        }
+
+        .loading-icon {
+
+            width: 34px;
+
+            height: 34px;
+
+            color: #15803d;
+
+            animation:
+                spin 1s linear infinite;
+
+            margin-bottom: 14px;
+        }
+
+        @keyframes spin {
+
+            to {
+                transform:
+                    rotate(360deg);
+            }
+
+        }
+
+        /* =========================================================
+           EMPTY / ERROR
+        ========================================================= */
+
+        .empty-state {
+
+            min-height: 280px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            text-align: center;
+
+            padding: 30px;
+        }
+
+        .empty-icon {
+
+            width: 60px;
+
+            height: 60px;
+
+            border-radius: 18px;
+
+            background: #ecfdf3;
+
+            color: #15803d;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 15px;
+        }
+
+        .empty-icon svg {
+
+            width: 27px;
+
+            height: 27px;
+        }
+
+        .empty-state h3 {
+
+            margin:
+                0 0 7px;
+
+            font-size: 18px;
+
+            color: #162019;
+        }
+
+        .empty-state p {
+
+            margin:
+                0 0 18px;
+
+            color: #829088;
+
+            font-size: 13px;
+
+            max-width: 440px;
+
+            line-height: 1.6;
+        }
+
+        .error-state {
+
+            min-height: 280px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            text-align: center;
+
+            padding: 30px;
+        }
+
+        .error-icon {
+
+            width: 60px;
+
+            height: 60px;
+
+            border-radius: 18px;
+
+            background: #fef2f2;
+
+            color: #dc2626;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 15px;
+        }
+
+        .error-icon svg {
+
+            width: 27px;
+
+            height: 27px;
+        }
+
+        .error-state h3 {
+
+            margin:
+                0 0 7px;
+
+            font-size: 18px;
+        }
+
+        .error-state p {
+
+            margin:
+                0 0 17px;
+
+            color: #849089;
+
+            font-size: 13px;
+
+        }
+
+        .try-button {
+
+            border: none;
+
+            background: #15803d;
+
+            color: white;
+
+            padding:
+                10px 17px;
+
+            border-radius: 10px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+        }
+
+        .try-button:hover {
+
+            background: #166534;
+        }
+
+        .try-button svg {
+
+            width: 16px;
+
+            height: 16px;
+        }
+
+        /* =========================================================
+           REVIEW MODAL
+        ========================================================= */
+
+        .modal {
+
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                rgba(7, 21, 15, .55);
+
+            backdrop-filter:
+                blur(5px);
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+            z-index: 5000;
+        }
+
+        .modal.active {
+
+            display: flex;
+        }
+
+        .modal-box {
+
+            width: min(
+                470px,
+                100%
+            );
+
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 25px;
+
+            box-shadow:
+                0 30px 70px
+                rgba(0,0,0,.2);
+        }
+
+        .modal-header {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 20px;
+        }
+
+        .modal-header-left {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 11px;
+        }
+
+        .modal-title-icon {
+
+            width: 40px;
+
+            height: 40px;
+
+            border-radius: 12px;
+
+            background: #ecfdf3;
+
+            color: #15803d;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+        .modal-header h3 {
+
+            margin: 0;
+
+            font-size: 17px;
+        }
+
+        .close-btn {
+
+            border: none;
+
+            background: #f4f7f5;
+
+            width: 35px;
+
+            height: 35px;
+
+            border-radius: 10px;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            transition: background 0.15s ease, transform 0.15s ease, color 0.15s ease;
+
+            color: #4b5563;
+        }
+
+        .close-btn:hover {
+            background: #fee2e2;
+            color: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .close-btn:active {
+            transform: scale(0.95);
+        }
+
+        .close-btn svg {
+
+            width: 17px;
+
+            height: 17px;
+        }
+
+        .review-station {
+
+            background: #f7faf8;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            border: 1px solid #e8eeea;
+        }
+
+        .review-station-label {
+
+            font-size: 10px;
+            color: #849089;
+            margin-bottom: 4px;
+        }
+
+        .review-station p {
+
+            margin: 0;
+            font-weight: 800;
+            color: #18221d;
+            font-size: 13px;
+        }
+
+        .review-category {
+
+            background: #f8faf9;
+            border: 1px solid #e8eeea;
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .review-category-header {
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .review-category-header strong {
+
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            color: #101828;
+        }
+
+        .review-category-header small {
+
+            display: block;
+            margin-top: 3px;
+            color: #98a2b3;
+            font-size: 9px;
+        }
+
+        .rating-value {
+
+            color: #15803d;
+            font-size: 10px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .rating-label {
+
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .star-container {
+
+            display: flex;
+            gap: 6px;
+            margin-top: 11px;
+        }
+
+        .star-button {
+
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #cbd5cf;
+            padding: 2px;
+        }
+
+        .star-button svg {
+
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
+
+        .star-button.selected,
+        .star-button.hover {
+
+            color: #f59e0b;
+        }
+
+        .review-categories {
+
+            display: grid;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .category-rating {
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 11px 13px;
+            background: #ffffff;
+            border: 1px solid #e8eeea;
+            border-radius: 11px;
+        }
+
+        .category-rating-label {
+
+            flex: 1;
+        }
+
+        .category-rating-label > div {
+
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: #344054;
+            font-size: 10px;
+            font-weight: 750;
+        }
+
+        .category-rating-label svg {
+
+            width: 14px;
+            height: 14px;
+            color: #15803d;
+        }
+
+        .category-rating-value {
+
+            display: block;
+            margin-top: 2px;
+            color: #98a2b3;
+            font-size: 8px;
+        }
+
+        .mini-stars {
+
+            display: flex;
+            gap: 1px;
+        }
+
+        .mini-stars button {
+
+            border: none;
+            background: transparent;
+            color: #d1d5db;
+            cursor: pointer;
+            padding: 1px;
+            font-size: 17px;
+            line-height: 1;
+            transition: .15s ease;
+        }
+
+        .mini-stars button:hover,
+        .mini-stars button.active {
+
+            color: #f59e0b;
+            transform: scale(1.06);
+        }
+
+        .review-textarea {
+
+            width: 100%;
+            min-height: 100px;
+            resize: vertical;
+            border: 1px solid #dfe7e2;
+            border-radius: 11px;
+            padding: 12px;
+            font: inherit;
+            outline: none;
+        }
+
+        .review-textarea:focus {
+
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34,197,94,.10);
+        }
+
+        .station-rating-summary {
+
+            background: #f8faf9;
+            border: 1px solid #e8eeea;
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 13px;
+        }
+
+        .station-rating-main {
+
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 13px;
+        }
+
+        .station-rating-score {
+
+            color: #101828;
+            font-size: 27px;
+            font-weight: 850;
+            letter-spacing: -.04em;
+        }
+
+        .station-rating-star {
+
+            color: #f59e0b;
+            font-size: 22px;
+        }
+
+        .station-rating-count {
+
+            color: #667085;
+            font-size: 9px;
+        }
+
+        .station-rating-row {
+
+            display: grid;
+            grid-template-columns: 115px 1fr 32px;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .station-rating-row-label {
+
+            color: #475467;
+            font-size: 9px;
+            font-weight: 650;
+        }
+
+        .station-rating-bar {
+
+            height: 6px;
+            overflow: hidden;
+            background: #e5e7eb;
+            border-radius: 99px;
+        }
+
+        .station-rating-bar-fill {
+
+            height: 100%;
+            background: #22c55e;
+            border-radius: inherit;
+        }
+
+        .station-rating-row-value {
+
+            color: #15803d;
+            text-align: right;
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .rating-summary-loading,
+        .rating-summary-empty {
+
+            color: #98a2b3;
+            font-size: 9px;
+            padding: 3px 0;
+        }
+
+        .alert {
+
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .alert.error {
+
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .alert.success {
+
+            background: #ecfdf3;
+            color: #15803d;
+        }
+
+        .review-submit {
+
+            width: 100%;
+            border: none;
+            background: #15803d;
+            color: white;
+            border-radius: 11px;
+            padding: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .review-submit:disabled {
+
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        @media(max-width: 600px) {
+
+            .category-rating {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .mini-stars {
+                width: 100%;
+            }
+
+            .station-rating-row {
+                grid-template-columns: 100px 1fr 30px;
+            }
+
+        }
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media(max-width: 900px) {
+
+            .booking-stats {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .premium-navbar {
+
+                padding:
+                    0 4%;
+            }
+
+            .premium-nav a,
+            .logout-button {
+
+                padding:
+                    10px 9px;
+            }
+
+            .page-heading {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+            }
+
+        }
+
+        @media(max-width: 650px) {
+
+            .premium-navbar {
+
+                height: auto;
+
+                padding:
+                    14px 4%;
+
+                flex-direction: column;
+
+                gap: 12px;
+            }
+
+            .premium-nav {
+
+                width: 100%;
+
+                overflow-x: auto;
+
+                justify-content: center;
+            }
+
+            .heading-left h1 {
+
+                font-size: 34px;
+            }
+
+            .booking-stats {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+            .bookings-toolbar {
+
+                align-items: stretch;
+
+                flex-direction: column;
+            }
+
+            .tabs-wrapper {
+
+                width: 100%;
+
+                overflow-x: auto;
+            }
+
+            .tab-btn {
+
+                flex: 1;
+
+                white-space: nowrap;
+            }
+
+            .refresh-button {
+
+                justify-content: center;
+            }
+
+            .booking-main {
+
+                flex-direction: column;
+            }
+
+            .amount-area {
+
+                width: 100%;
+
+                text-align: left;
+            }
+
+            .bookings-section {
+
+                padding: 14px;
+            }
+
+        }
+
+        /* =========================================================
+   REVIEW MODAL - FIX VERTICAL SCROLLING
+   ========================================================= */
+
+.review-modal,
+#reviewModal {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+    box-sizing: border-box;
+
+    background: rgba(7, 21, 15, .55);
+    backdrop-filter: blur(5px);
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    -webkit-overflow-scrolling: touch;
+    z-index: 5000;
+}
+
+.review-modal.active,
+#reviewModal.active {
+    display: flex;
+}
+
+/* Review modal card */
+.review-modal > div,
+#reviewModal > div {
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    box-sizing: border-box;
+
+    scrollbar-width: thin;
+}
+
+/* Chrome / Edge scrollbar */
+.review-modal > div::-webkit-scrollbar,
+#reviewModal > div::-webkit-scrollbar {
+    width: 7px;
+}
+
+.review-modal > div::-webkit-scrollbar-track,
+#reviewModal > div::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.review-modal > div::-webkit-scrollbar-thumb,
+#reviewModal > div::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+/* Prevent the modal from becoming wider than the screen */
+.review-modal *,
+#reviewModal * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+
+    .review-modal,
+    #reviewModal {
+        align-items: flex-start;
+        padding: 12px;
+    }
+
+    .review-modal.active,
+    #reviewModal.active {
+        display: flex;
+    }
+
+    .review-modal > div,
+    #reviewModal > div {
+        width: 100%;
+        max-height: calc(100vh - 24px);
+        max-height: calc(100dvh - 24px);
+    }
+}
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- =========================================================
+         NAVBAR
+    ========================================================= -->
+
+    <header class="premium-navbar">
+
+        <a
+            href="dashboard.html"
+            class="premium-logo"
+        >
+
+            <span class="logo-icon">
+
+                <i data-lucide="zap"></i>
+
+            </span>
+
+            EV Charge Hub
+
+        </a>
+
+        <nav class="premium-nav">
+
+            <a href="dashboard.html">
+                Dashboard
+            </a>
+
+            <a href="search.html">
+                Find Chargers
+            </a>
+
+            <a
+                href="bookings.html"
+                class="active"
+            >
+                My Bookings
+            </a>
+
+            <button
+                type="button"
+                id="navLogoutBtn"
+                class="logout-button"
+            >
+
+                <i data-lucide="log-out"></i>
+
+                Logout
+
+            </button>
+
+        </nav>
+
+    </header>
+
+
+    <!-- =========================================================
+         MAIN
+    ========================================================= -->
+
+    <main class="page-container">
+
+        <div class="breadcrumb">
+
+            <a href="dashboard.html">
+                Dashboard
+            </a>
+
+            <i data-lucide="chevron-right"></i>
+
+            <span>
+                My Bookings
+            </span>
+
+        </div>
+
+
+        <section class="page-heading">
+
+            <div class="heading-left">
+
+                <h1>
+                    My Bookings
+                </h1>
+
+                <p>
+                    View and manage your EV charging sessions.
+                </p>
+
+            </div>
+
+            <a
+                href="search.html"
+                class="find-charger-button"
+            >
+
+                <i data-lucide="map-pin"></i>
+
+                Find a Charger
+
+            </a>
+
+        </section>
+
+
+        <!-- =====================================================
+             STATS
+        ====================================================== -->
+
+        <section class="booking-stats">
+
+            <div class="stat-card">
+
+                <div class="stat-icon green">
+
+                    <i data-lucide="calendar-check-2"></i>
+
+                </div>
+
+                <div class="stat-label">
+                    Total Sessions
+                </div>
+
+                <div
+                    class="stat-number"
+                    id="totalBookings"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon blue">
+
+                    <i data-lucide="clock-3"></i>
+
+                </div>
+
+                <div class="stat-label">
+                    Upcoming
+                </div>
+
+                <div
+                    class="stat-number"
+                    id="upcomingBookings"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon green">
+
+                    <i data-lucide="circle-check"></i>
+
+                </div>
+
+                <div class="stat-label">
+                    Completed
+                </div>
+
+                <div
+                    class="stat-number"
+                    id="completedBookings"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon orange">
+
+                    <i data-lucide="wallet"></i>
+
+                </div>
+
+                <div class="stat-label">
+    Booking Payments
+</div>
+
+                <div
+                    class="stat-number"
+                    id="totalSpent"
+                >
+                    ₹0
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             TOOLBAR
+        ====================================================== -->
+
+        <div class="bookings-toolbar">
+
+            <div class="tabs-wrapper">
+
+                <button
+                    type="button"
+                    class="tab-btn active"
+                    data-filter="All"
+                >
+                    All
+                </button>
+
+                <button
+                    type="button"
+                    class="tab-btn"
+                    data-filter="Upcoming"
+                >
+                    Upcoming
+                </button>
+
+                <button
+                    type="button"
+                    class="tab-btn"
+                    data-filter="Completed"
+                >
+                    Completed
+                </button>
+
+                <button
+                    type="button"
+                    class="tab-btn"
+                    data-filter="Cancelled"
+                >
+                    Cancelled
+                </button>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="refresh-button"
+                id="refreshBtn"
+            >
+
+                <i data-lucide="refresh-cw"></i>
+
+                Refresh
+
+            </button>
+
+        </div>
+
+
+        <!-- =====================================================
+             BOOKINGS
+        ====================================================== -->
+
+        <section class="bookings-section">
+
+            <div class="section-top">
+
+                <div class="section-title">
+                    Charging Sessions
+                </div>
+
+                <div
+                    class="session-count"
+                    id="sessionCount"
+                >
+                    0 sessions
+                </div>
+
+            </div>
+
+
+            <div id="bookingsList">
+
+                <div class="loading-state">
+
+                    <i
+                        data-lucide="loader-circle"
+                        class="loading-icon"
+                    ></i>
+
+                    <p>
+                        Loading your bookings...
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+         REVIEW MODAL
+    ========================================================= -->
+
+    <div
+        class="modal"
+        id="reviewModal"
+    >
+
+        <div class="modal-box review-modal-box">
+
+            <div class="modal-header">
+
+                <div class="modal-header-left">
+
+                    <div class="modal-title-icon">
+                        <i data-lucide="star"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Rate Your Charging Session
+                        </h3>
+
+                        <p class="review-modal-subtitle">
+                            Your feedback helps improve this station.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="close-btn"
+                    id="closeModalBtn"
+                    onclick="closeModal()"
+                    aria-label="Close modal"
+                >
+                    <i data-lucide="x"></i>
+                </button>
+
+            </div>
+
+            <form id="reviewForm">
+
+                <input type="hidden" id="reviewStationId">
+                <input type="hidden" id="reviewBookingId">
+
+                <div class="review-station">
+
+                    <div class="review-station-label">
+                        Charging Station
+                    </div>
+
+                    <p id="reviewStationName">
+                        EV Charging Station
+                    </p>
+
+                </div>
+
+                <div class="station-rating-summary">
+
+                    <div class="station-rating-main">
+
+                        <span
+                            class="station-rating-score"
+                            id="stationOverallRating"
+                        >
+                            —
+                        </span>
+
+                        <span class="station-rating-star">
+                            ★
+                        </span>
+
+                        <span
+                            class="station-rating-count"
+                            id="stationReviewCount"
+                        >
+                            No reviews yet
+                        </span>
+
+                    </div>
+
+                    <div id="stationRatingBreakdown">
+
+                        <div class="rating-summary-loading">
+                            Loading station ratings...
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="review-category">
+
+                    <div class="review-category-header">
+
+                        <div>
+                            <strong>
+                                How was your charging experience?
+                            </strong>
+                            <small>
+                                Overall Rating
+                            </small>
+                        </div>
+
+                        <span
+                            id="overallRatingValue"
+                            class="rating-value"
+                        >
+                            0 / 5
+                        </span>
+
+                    </div>
+
+                    <div
+                        class="star-container"
+                        data-rating-group="overall"
+                    >
+
+                        <button type="button" class="star-button" data-value="1">
+                            <i data-lucide="star"></i>
+                        </button>
+                        <button type="button" class="star-button" data-value="2">
+                            <i data-lucide="star"></i>
+                        </button>
+                        <button type="button" class="star-button" data-value="3">
+                            <i data-lucide="star"></i>
+                        </button>
+                        <button type="button" class="star-button" data-value="4">
+                            <i data-lucide="star"></i>
+                        </button>
+                        <button type="button" class="star-button" data-value="5">
+                            <i data-lucide="star"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="review-categories">
+
+                    <div class="category-rating">
+
+                        <div class="category-rating-label">
+                            <div>
+                                <i data-lucide="zap"></i>
+                                <span>Charging Speed</span>
+                            </div>
+                            <span id="chargingSpeedRatingValue" class="category-rating-value">
+                                0/5
+                            </span>
+                        </div>
+
+                        <div class="mini-stars" data-rating-group="charging_speed">
+                            <button type="button" data-value="1">★</button>
+                            <button type="button" data-value="2">★</button>
+                            <button type="button" data-value="3">★</button>
+                            <button type="button" data-value="4">★</button>
+                            <button type="button" data-value="5">★</button>
+                        </div>
+
+                    </div>
+
+                    <div class="category-rating">
+
+                        <div class="category-rating-label">
+                            <div>
+                                <i data-lucide="circle-check"></i>
+                                <span>Availability</span>
+                            </div>
+                            <span id="availabilityRatingValue" class="category-rating-value">
+                                0/5
+                            </span>
+                        </div>
+
+                        <div class="mini-stars" data-rating-group="availability">
+                            <button type="button" data-value="1">★</button>
+                            <button type="button" data-value="2">★</button>
+                            <button type="button" data-value="3">★</button>
+                            <button type="button" data-value="4">★</button>
+                            <button type="button" data-value="5">★</button>
+                        </div>
+
+                    </div>
+
+                    <div class="category-rating">
+
+                        <div class="category-rating-label">
+                            <div>
+                                <i data-lucide="sparkles"></i>
+                                <span>Cleanliness</span>
+                            </div>
+                            <span id="cleanlinessRatingValue" class="category-rating-value">
+                                0/5
+                            </span>
+                        </div>
+
+                        <div class="mini-stars" data-rating-group="cleanliness">
+                            <button type="button" data-value="1">★</button>
+                            <button type="button" data-value="2">★</button>
+                            <button type="button" data-value="3">★</button>
+                            <button type="button" data-value="4">★</button>
+                            <button type="button" data-value="5">★</button>
+                        </div>
+
+                    </div>
+
+                    <div class="category-rating">
+
+                        <div class="category-rating-label">
+                            <div>
+                                <i data-lucide="users"></i>
+                                <span>Staff</span>
+                            </div>
+                            <span id="staffRatingValue" class="category-rating-value">
+                                0/5
+                            </span>
+                        </div>
+
+                        <div class="mini-stars" data-rating-group="staff">
+                            <button type="button" data-value="1">★</button>
+                            <button type="button" data-value="2">★</button>
+                            <button type="button" data-value="3">★</button>
+                            <button type="button" data-value="4">★</button>
+                            <button type="button" data-value="5">★</button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <textarea
+                    id="reviewComment"
+                    class="review-textarea"
+                    placeholder="Write your review..."
+                    maxlength="2000"
+                ></textarea>
+
+                <div
+                    id="reviewAlert"
+                    class="alert"
+                    style="display:none;"
+                ></div>
+
+                <button
+                    type="submit"
+                    class="review-submit"
+                    id="submitReviewBtn"
+                >
+                    <i data-lucide="send"></i>
+                    Submit Review
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         API HELPER
+    ========================================================= -->
+
+    <script src="../js/api.js"></script>
+
+
+    <script>
+
+        /* =========================================================
+           INITIALIZATION
+        ========================================================= */
+
+        lucide.createIcons();
+
+
+        /* =========================================================
+           AUTH
+        ========================================================= */
+
+        const BOOKINGS_API_BASE_URL = 'http://localhost:5000/api';
+
+        const token =
+            localStorage.getItem('ev_token');
+
+        if (!token) {
+
+            window.location.href =
+                'login.html';
+
+        }
+
+
+        /* =========================================================
+           GLOBAL STATE
+        ========================================================= */
+
+        let allBookings = [];
+
+        let activeFilter = 'All';
+
+
+        /* =========================================================
+           SAFE API CALL
+        ========================================================= */
+
+        async function updateBookingStatus(
+    bookingId,
+    status
+) {
+
+    const response =
+        await fetch(
+            `${BOOKINGS_API_BASE_URL}/bookings/${bookingId}`,
+            {
+                method: "PUT",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/json",
+
+                    "Authorization":
+                        `Bearer ${token}`
+
+                },
+
+                body: JSON.stringify({
+
+                    status: status
+
+                })
+
+            }
+        );
+
+
+    let data = null;
+
+    try {
+        data = await response.json();
+    } catch (_) {
+        data = null;
+    }
+
+
+    console.log(
+        "Update booking response:",
+        data
+    );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.message ||
+            `Failed to update booking. HTTP ${response.status}`
+        );
+
+    }
+
+
+    return data;
+
+}
+
+        async function requestBookings() {
+
+            const url =
+                `${BOOKINGS_API_BASE_URL}/bookings/my-bookings`;
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        method: 'GET',
+
+                        headers: {
+
+                            'Authorization':
+                                `Bearer ${token}`,
+
+                            'Content-Type':
+                                'application/json'
+
+                        }
+                    }
+                );
+
+
+            let result = null;
+
+            try {
+
+                result =
+                    await response.json();
+
+            } catch (e) {
+
+                result = null;
+
+            }
+
+
+            console.log(
+                'BOOKINGS API STATUS:',
+                response.status
+            );
+
+            console.log(
+                'BOOKINGS API RESPONSE:',
+                result
+            );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result?.message ||
+                    result?.error ||
+                    `Server returned ${response.status}`
+                );
+
+            }
+
+
+            return result;
+
+        }
+
+
+        /* =========================================================
+           EXTRACT BOOKINGS
+        ========================================================= */
+
+        function extractBookings(response) {
+
+            if (Array.isArray(response)) {
+
+                return response;
+
+            }
+
+
+            if (
+                response &&
+                Array.isArray(response.data)
+            ) {
+
+                return response.data;
+
+            }
+
+
+            if (
+                response &&
+                Array.isArray(response.bookings)
+            ) {
+
+                return response.bookings;
+
+            }
+
+
+            if (
+                response &&
+                response.data &&
+                Array.isArray(response.data.bookings)
+            ) {
+
+                return response.data.bookings;
+
+            }
+
+
+            return [];
+
+        }
+
+
+        /* =========================================================
+           DATE NORMALIZATION
+        ========================================================= */
+
+        function normalizeDate(value) {
+
+            if (!value) {
+
+                return '';
+
+            }
+
+
+            const text =
+                String(value);
+
+
+            if (
+                /^\d{4}-\d{2}-\d{2}$/.test(text)
+            ) {
+
+                return text;
+
+            }
+
+
+            const date =
+                new Date(value);
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return text;
+
+            }
+
+
+            const year =
+                date.getFullYear();
+
+
+            const month =
+                String(
+                    date.getMonth() + 1
+                ).padStart(2, '0');
+
+
+            const day =
+                String(
+                    date.getDate()
+                ).padStart(2, '0');
+
+
+            return `${year}-${month}-${day}`;
+
+        }
+
+
+        /* =========================================================
+           TIME NORMALIZATION
+        ========================================================= */
+
+        function normalizeTime(value) {
+
+            if (!value) {
+
+                return '';
+
+            }
+
+
+            return String(value)
+                .substring(0, 5);
+
+        }
+
+
+        /* =========================================================
+           STATUS NORMALIZATION
+        ========================================================= */
+
+        function normalizeStatus(status) {
+
+            const value =
+                String(
+                    status || ''
+                )
+                .trim()
+                .toLowerCase();
+
+
+            if (
+                value === 'cancelled' ||
+                value === 'canceled'
+            ) {
+
+                return 'Cancelled';
+
+            }
+
+
+            if (
+                value === 'completed' ||
+                value === 'complete'
+            ) {
+
+                return 'Completed';
+
+            }
+
+
+            if (
+                value === 'pending' ||
+                value === 'confirmed' ||
+                value === 'active' ||
+                value === 'upcoming'
+            ) {
+
+                return 'Upcoming';
+
+            }
+
+
+            return status ||
+                'Upcoming';
+
+        }
+
+
+        /* =========================================================
+           EFFECTIVE STATUS
+        ========================================================= */
+
+        function getEffectiveStatus(booking) {
+
+            const original =
+                normalizeStatus(
+                    booking.status
+                );
+
+
+            if (
+                original === 'Cancelled'
+            ) {
+
+                return 'Cancelled';
+
+            }
+
+
+            const date =
+                booking.date;
+
+            const endTime =
+                booking.endTime;
+
+
+            if (
+                date &&
+                endTime
+            ) {
+
+                const end =
+                    new Date(
+                        `${date}T${endTime}`
+                    );
+
+
+                if (
+                    !Number.isNaN(
+                        end.getTime()
+                    ) &&
+                    end.getTime() <= Date.now()
+                ) {
+
+                    return 'Completed';
+
+                }
+
+            }
+
+
+            return original;
+
+        }
+
+
+        /* =========================================================
+           NORMALIZE BACKEND BOOKING
+        ========================================================= */
+
+        function normalizeBooking(b) {
+
+            const vehicleInfo =
+                b.vehicle_info ||
+                b.vehicle ||
+                (
+                    b.vehicle_name
+                        ? `${b.vehicle_name}${b.vehicle_number ? ` • ${b.vehicle_number}` : ''}`
+                        : 'EV Vehicle'
+                );
+
+
+            return {
+
+                /*
+                 * VERY IMPORTANT:
+                 * this is the REAL DATABASE ID.
+                 */
+                id:
+                    b.id ??
+                    b.booking_id,
+
+                stationId:
+                    b.station_id ??
+                    b.stationId ??
+                    null,
+
+                stationName:
+                    b.station_name ||
+                    b.stationName ||
+                    b.name ||
+                    'EV Charging Station',
+
+                vehicle:
+                    vehicleInfo,
+
+                date:
+                    normalizeDate(
+                        b.booking_date ||
+                        b.date ||
+                        b.bookingDate
+                    ),
+
+                startTime:
+                    normalizeTime(
+                        b.start_time ||
+                        b.startTime
+                    ),
+
+                endTime:
+                    normalizeTime(
+                        b.end_time ||
+                        b.endTime
+                    ),
+
+                chargerNumber:
+                    b.charger_number ||
+                    b.chargerNumber ||
+                    b.charger_name ||
+                    '',
+
+                chargingSpeed:
+                    b.charging_speed ||
+                    b.chargingSpeed ||
+                    (
+                        b.power_kw
+                            ? `${b.power_kw} kW Fast`
+                            : ''
+                    ),
+
+                amount:
+                    Number(
+                        b.amount || 0
+                    ),
+
+                status:
+                    normalizeStatus(
+                        b.status
+                    ),
+
+                paymentStatus:
+                    b.payment_status ||
+                    '',
+
+                razorpayPaymentId:
+                    b.razorpay_payment_id ||
+                    '',
+
+                reviewExists:
+    Number(
+        b.review_exists ??
+        b.has_review ??
+        0
+    ) === 1
+
+            };
+
+        }
+
+        /* =========================================================
+   GET SIMULATED CHARGING RESULT
+========================================================= */
+
+function getChargingResult(bookingId) {
+
+    if (!bookingId) {
+        return null;
+    }
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                `charging_result_${bookingId}`
+            );
+
+        if (!raw) {
+            return null;
+        }
+
+        const result =
+            JSON.parse(raw);
+
+        if (!result || typeof result !== 'object') {
+            return null;
+        }
+
+        return {
+
+            energyDelivered:
+                Number(
+                    result.energy_delivered || 0
+                ),
+
+            batteryPercentage:
+                Number(
+                    result.battery_percentage || 0
+                ),
+
+            elapsedMinutes:
+                Number(
+                    result.elapsed_minutes || 0
+                ),
+
+            cost:
+                Number(
+                    result.cost || 0
+                ),
+
+            completedAt:
+                result.completed_at || null
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            'Unable to read charging result:',
+            error
+        );
+
+        return null;
+
+    }
+
+}
+
+
+        /* =========================================================
+           FETCH BOOKINGS
+        ========================================================= */
+
+        async function fetchBookings() {
+
+            const list =
+                document.getElementById(
+                    'bookingsList'
+                );
+
+
+            list.innerHTML = `
+
+                <div class="loading-state">
+
+                    <i
+                        data-lucide="loader-circle"
+                        class="loading-icon"
+                    ></i>
+
+                    <p>
+                        Loading your bookings...
+                    </p>
+
+                </div>
+
+            `;
+
+            lucide.createIcons();
+
+
+            try {
+
+                /*
+                 * DATABASE IS THE SOURCE OF TRUTH.
+                 */
+
+                const response =
+                    await requestBookings();
+
+
+                const records =
+                    extractBookings(
+                        response
+                    );
+
+
+                allBookings =
+                    records.map(
+                        normalizeBooking
+                    );
+
+
+                console.log(
+                    'NORMALIZED DATABASE BOOKINGS:',
+                    allBookings
+                );
+
+
+                updateStatistics();
+
+                renderBookings(
+                    activeFilter
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    'Backend booking request failed:',
+                    error
+                );
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * We do NOT mix fake/local bookings
+                 * with database bookings.
+                 *
+                 * If backend fails, show the real
+                 * error instead of displaying stale
+                 * localStorage records.
+                 */
+
+                allBookings = [];
+
+                updateStatistics();
+
+                showError(
+                    error.message ||
+                    'Failed to fetch bookings.'
+                );
+
+            }
+
+        }
+
+
+        /* =========================================================
+           STATISTICS
+        ========================================================= */
+
+        function updateStatistics() {
+
+            const total =
+                allBookings.length;
+
+
+            const upcoming =
+                allBookings.filter(
+                    booking =>
+                        getEffectiveStatus(
+                            booking
+                        ) === 'Upcoming'
+                ).length;
+
+
+            const completed =
+                allBookings.filter(
+                    booking =>
+                        getEffectiveStatus(
+                            booking
+                        ) === 'Completed'
+                ).length;
+
+
+            const spent =
+                allBookings.reduce(
+                    (
+                        total,
+                        booking
+                    ) => {
+
+                        if (
+                            getEffectiveStatus(
+                                booking
+                            ) === 'Cancelled'
+                        ) {
+
+                            return total;
+
+                        }
+
+                        return total +
+                            Number(
+                                booking.amount || 0
+                            );
+
+                    },
+                    0
+                );
+
+
+            document.getElementById(
+                'totalBookings'
+            ).textContent =
+                total;
+
+
+            document.getElementById(
+                'upcomingBookings'
+            ).textContent =
+                upcoming;
+
+
+            document.getElementById(
+                'completedBookings'
+            ).textContent =
+                completed;
+
+
+            document.getElementById(
+                'totalSpent'
+            ).textContent =
+                `₹${spent.toFixed(2)}`;
+
+        }
+
+
+        /* =========================================================
+           STATUS CLASS
+        ========================================================= */
+
+        function getStatusClass(status) {
+
+            const value =
+                normalizeStatus(
+                    status
+                );
+
+
+            if (
+                value === 'Completed'
+            ) {
+
+                return 'status-completed';
+
+            }
+
+
+            if (
+                value === 'Cancelled'
+            ) {
+
+                return 'status-cancelled';
+
+            }
+
+
+            if (
+                value === 'Upcoming'
+            ) {
+
+                return 'status-upcoming';
+
+            }
+
+
+            return 'status-pending';
+
+        }
+
+
+        /* =========================================================
+           ESCAPE HTML
+        ========================================================= */
+
+        function escapeHtml(value) {
+
+            if (
+                value === null ||
+                value === undefined
+            ) {
+
+                return '';
+
+            }
+
+
+            return String(value)
+
+                .replace(
+                    /&/g,
+                    '&amp;'
+                )
+
+                .replace(
+                    /</g,
+                    '&lt;'
+                )
+
+                .replace(
+                    />/g,
+                    '&gt;'
+                )
+
+                .replace(
+                    /"/g,
+                    '&quot;'
+                )
+
+                .replace(
+                    /'/g,
+                    '&#039;'
+                );
+
+        }
+
+
+        /* =========================================================
+           FORMAT DATE
+        ========================================================= */
+
+        function formatDate(value) {
+
+            if (!value) {
+
+                return 'Date unavailable';
+
+            }
+
+
+            const date =
+                new Date(
+                    `${value}T00:00:00`
+                );
+
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return value;
+
+            }
+
+
+            return date.toLocaleDateString(
+                'en-IN',
+                {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                }
+            );
+
+        }
+
+
+        /* =========================================================
+           RENDER BOOKINGS
+        ========================================================= */
+
+        function renderBookings(
+            filter = 'All'
+        ) {
+
+            activeFilter =
+                filter;
+
+
+            const list =
+                document.getElementById(
+                    'bookingsList'
+                );
+
+
+            let filtered =
+                allBookings;
+
+
+            if (
+                filter === 'Upcoming'
+            ) {
+
+                filtered =
+                    allBookings.filter(
+                        booking =>
+                            getEffectiveStatus(
+                                booking
+                            ) === 'Upcoming'
+                    );
+
+            }
+
+
+            else if (
+                filter === 'Completed'
+            ) {
+
+                filtered =
+                    allBookings.filter(
+                        booking =>
+                            getEffectiveStatus(
+                                booking
+                            ) === 'Completed'
+                    );
+
+            }
+
+
+            else if (
+                filter === 'Cancelled'
+            ) {
+
+                filtered =
+                    allBookings.filter(
+                        booking =>
+                            getEffectiveStatus(
+                                booking
+                            ) === 'Cancelled'
+                    );
+
+            }
+
+
+            document.getElementById(
+                'sessionCount'
+            ).textContent =
+                `${filtered.length} ${
+                    filtered.length === 1
+                        ? 'session'
+                        : 'sessions'
+                }`;
+
+
+            if (
+                filtered.length === 0
+            ) {
+
+                list.innerHTML = `
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+
+                            <i
+                                data-lucide="calendar-x-2"
+                            ></i>
+
+                        </div>
+
+                        <h3>
+                            ${
+                                filter === 'All'
+                                    ? 'No bookings found'
+                                    : `No ${filter.toLowerCase()} bookings`
+                            }
+                        </h3>
+
+                        <p>
+                            ${
+                                filter === 'All'
+                                    ? 'You have not made any charging bookings yet.'
+                                    : `There are no ${filter.toLowerCase()} charging sessions to display.`
+                            }
+                        </p>
+
+                        <a
+                            href="search.html"
+                            class="find-charger-button"
+                        >
+
+                            <i data-lucide="map-pin"></i>
+
+                            Find a Charger
+
+                        </a>
+
+                    </div>
+
+                `;
+
+                lucide.createIcons();
+
+                return;
+
+            }
+
+
+            list.innerHTML =
+                filtered.map(
+                    booking => {
+
+                        const status =
+                            getEffectiveStatus(
+                                booking
+                            );
+
+
+                        const station =
+                            escapeHtml(
+                                booking.stationName
+                            );
+
+
+                        const vehicle =
+                            escapeHtml(
+                                booking.vehicle
+                            );
+
+
+                        const bookingId =
+                            escapeHtml(
+                                booking.id
+                            );
+
+
+                        const date =
+                            escapeHtml(
+                                formatDate(
+                                    booking.date
+                                )
+                            );
+
+
+                        const start =
+                            escapeHtml(
+                                booking.startTime ||
+                                '--:--'
+                            );
+
+
+                        const end =
+                            escapeHtml(
+                                booking.endTime ||
+                                '--:--'
+                            );
+
+
+                        const charger =
+                            escapeHtml(
+                                booking.chargerNumber ||
+                                'Charger'
+                            );
+
+
+                        const speed =
+                            escapeHtml(
+                                booking.chargingSpeed ||
+                                'Fast Charging'
+                            );
+
+
+                        const amount =
+                            Number(
+                                booking.amount || 0
+                            );
+
+                        const chargingResult =
+    getChargingResult(
+        booking.id
+    );
+
+
+const simulatedChargingCost =
+    chargingResult &&
+    Number.isFinite(
+        chargingResult.cost
+    )
+        ? chargingResult.cost
+        : 0;
+
+
+const hasSimulatedCharging =
+    status === 'Completed' &&
+    chargingResult &&
+    simulatedChargingCost > 0;
+
+
+const paymentIsPaid =
+    String(
+        booking.paymentStatus || ''
+    ).toLowerCase() === 'paid';
+
+
+                        const stationId =
+                            booking.stationId;
+
+
+                        const validBookingId =
+                            Number.isInteger(Number(booking.id)) &&
+                            Number(booking.id) > 0;
+
+                        const validStationId =
+                            Number.isInteger(Number(stationId)) &&
+                            Number(stationId) > 0;
+
+                        const canCancel =
+                            status === 'Upcoming' &&
+                            validBookingId;
+
+                        const canReview =
+    status === 'Completed' &&
+    validBookingId &&
+    validStationId;
+
+
+                        return `
+
+                            <article
+                                class="booking-card"
+                            >
+
+                                <div class="booking-main">
+
+                                    <div class="station-area">
+
+                                        <div class="station-icon">
+
+                                            <i data-lucide="zap"></i>
+
+                                        </div>
+
+
+                                        <div class="station-content">
+
+                                            <h3>
+                                                ${station}
+                                            </h3>
+
+                                            <div class="booking-id">
+
+                                                Booking ID:
+                                                <strong>
+                                                    #${bookingId}
+                                                </strong>
+
+                                            </div>
+
+                                            <span
+                                                class="status-badge ${getStatusClass(status)}"
+                                            >
+
+                                                <span
+                                                    class="status-dot"
+                                                ></span>
+
+                                                ${status}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="amount-area">
+
+    <div class="payment-summary">
+
+        <!-- REAL BOOKING PAYMENT -->
+
+        <div class="payment-main">
+
+            <div class="payment-label">
+                Booking Payment
+            </div>
+
+            <div class="payment-amount">
+                ₹${amount.toFixed(2)}
+            </div>
+
+            <div
+                class="payment-status ${
+                    paymentIsPaid
+                        ? ''
+                        : 'unpaid'
+                }"
+            >
+
+                <i
+                    data-lucide="${
+                        paymentIsPaid
+                            ? 'circle-check'
+                            : 'clock-3'
+                    }"
+                    style="width:12px;height:12px;"
+                ></i>
+
+                ${
+                    paymentIsPaid
+                        ? 'Paid'
+                        : 'Payment Pending'
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- SIMULATED CHARGING COST -->
+
+        ${
+            hasSimulatedCharging
+                ? `
+                    <div class="simulated-cost-box">
+
+                        <div class="simulated-cost-label">
+                            Simulated Charging Cost
+                        </div>
+
+                        <div class="simulated-cost-value">
+                            ₹${simulatedChargingCost.toFixed(2)}
+                        </div>
+
+                        <div class="simulated-cost-note">
+                            Academic simulation •
+                            No additional payment processed
+                        </div>
+
+                    </div>
+                `
+                : ''
+        }
+
+    </div>
+
+</div>
+
+                                </div>
+
+
+                                <div class="booking-details">
+
+                                    <div class="detail-pill">
+
+                                        <i
+                                            data-lucide="calendar-days"
+                                        ></i>
+
+                                        ${date}
+
+                                    </div>
+
+
+                                    <div class="detail-pill">
+
+                                        <i
+                                            data-lucide="clock-3"
+                                        ></i>
+
+                                        ${start}
+                                        -
+                                        ${end}
+
+                                    </div>
+
+
+                                    <div class="detail-pill">
+
+                                        <i
+                                            data-lucide="car"
+                                        ></i>
+
+                                        ${vehicle}
+
+                                    </div>
+
+
+                                    <div class="detail-pill">
+
+                                        <i
+                                            data-lucide="plug-zap"
+                                        ></i>
+
+                                        ${charger}
+
+                                    </div>
+
+
+                                    <div class="detail-pill">
+
+                                        <i
+                                            data-lucide="gauge"
+                                        ></i>
+
+                                        ${speed}
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="booking-actions">
+
+                                    <button
+                                        type="button"
+                                        class="action-btn"
+                                        onclick="navigateToStation('${encodeURIComponent(booking.stationName)}')"
+                                    >
+
+                                        <i
+                                            data-lucide="navigation"
+                                        ></i>
+
+                                        Directions
+
+                                    </button>
+
+                                    ${
+                                        status === 'Upcoming'
+                                            ? `
+                                                <button
+                                                    type="button"
+                                                    class="action-btn green"
+                                                    onclick="openLiveSession(${Number(booking.id)})"
+                                                >
+                                                    <i data-lucide="zap"></i>
+                                                    Live Session
+                                                </button>
+                                            `
+                                            : ''
+                                    }
+
+
+                                    ${
+                                        canCancel
+                                            ? `
+                                                <button
+                                                    type="button"
+                                                    class="action-btn red"
+                                                    onclick="cancelBooking(${Number(booking.id)})"
+                                                >
+
+                                                    <i
+                                                        data-lucide="x-circle"
+                                                    ></i>
+
+                                                    Cancel Booking
+
+                                                </button>
+                                            `
+                                            : ''
+                                    }
+
+
+                                    ${
+    canReview
+        ? (
+            booking.reviewExists
+                ? `
+                    <button
+                        type="button"
+                        class="action-btn"
+                        disabled
+                        style="
+                            background:#f1f5f3;
+                            color:#64748b;
+                            border:1px solid #dbe4de;
+                            cursor:not-allowed;
+                            opacity:1;
+                        "
+                    >
+                        <i data-lucide="badge-check"></i>
+                        Already Reviewed
+                    </button>
+                `
+                : `
+                    <button
+                        type="button"
+                        class="action-btn green"
+                        onclick="openReview(
+                            ${Number(booking.id)},
+                            ${Number(stationId || 0)},
+                            '${encodeURIComponent(booking.stationName)}'
+                        )"
+                    >
+
+                        <i data-lucide="star"></i>
+
+                        Write Review
+
+                    </button>
+                `
+        )
+        : ''
+}
+
+                                </div>
+
+                            </article>
+
+                        `;
+
+                    }
+                ).join('');
+
+
+            lucide.createIcons();
+
+        }
+
+
+        /* =========================================================
+           ERROR
+        ========================================================= */
+
+        function showError(message) {
+
+            document.getElementById(
+                'sessionCount'
+            ).textContent =
+                'Unable to load';
+
+
+            document.getElementById(
+                'bookingsList'
+            ).innerHTML = `
+
+                <div class="error-state">
+
+                    <div class="error-icon">
+
+                        <i
+                            data-lucide="database-zap"
+                        ></i>
+
+                    </div>
+
+                    <h3>
+                        Unable to load bookings
+                    </h3>
+
+                    <p>
+                        ${escapeHtml(message)}
+                    </p>
+
+                    <button
+                        type="button"
+                        class="try-button"
+                        onclick="fetchBookings()"
+                    >
+
+                        <i data-lucide="refresh-cw"></i>
+
+                        Try Again
+
+                    </button>
+
+                </div>
+
+            `;
+
+
+            lucide.createIcons();
+
+        }
+
+
+        /* =========================================================
+           CANCEL BOOKING
+        ========================================================= */
+
+        async function cancelBooking(
+            bookingId
+        ) {
+
+            if (!bookingId) {
+
+                alert(
+                    'Invalid booking ID.'
+                );
+
+                return;
+
+            }
+
+
+            const confirmed =
+                confirm(
+                    'Are you sure you want to cancel this booking?'
+                );
+
+
+            if (!confirmed) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${BOOKINGS_API_BASE_URL}/bookings/${bookingId}`,
+                        {
+                            method: 'PUT',
+
+                            headers: {
+
+                                'Authorization':
+                                    `Bearer ${token}`,
+
+                                'Content-Type':
+                                    'application/json'
+
+                            },
+
+                            body: JSON.stringify({
+
+                                status:
+                                    'Cancelled'
+
+                            })
+
+                        }
+                    );
+
+
+                let result = null;
+
+                try {
+                    result = await response.json();
+                } catch (_) {
+                    result = null;
+                }
+
+
+                console.log(
+                    'CANCEL RESPONSE:',
+                    result
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result?.message ||
+                        'Failed to cancel booking.'
+                    );
+
+                }
+
+
+                alert(
+                    'Booking cancelled successfully.'
+                );
+
+
+                await fetchBookings();
+
+            } catch (error) {
+
+                console.error(
+                    'Cancellation error:',
+                    error
+                );
+
+
+                alert(
+                    error.message ||
+                    'Failed to cancel booking.'
+                );
+
+            }
+
+        }
+
+
+        /* =========================================================
+           DIRECTIONS
+        ========================================================= */
+
+        function navigateToStation(
+            encodedName
+        ) {
+
+            const name =
+                decodeURIComponent(
+                    encodedName
+                );
+
+
+            const destination =
+                encodeURIComponent(
+                    `${name}, Pune, Maharashtra`
+                );
+
+
+            window.open(
+                `https://www.google.com/maps/dir/?api=1&destination=${destination}`,
+                '_blank'
+            );
+
+        }
+
+        function openLiveSession(
+    bookingId
+) {
+
+    if (!bookingId) {
+
+        alert(
+            "Invalid booking ID."
+        );
+
+        return;
+
+    }
+
+
+    sessionStorage.setItem(
+        "last_booking_id",
+        String(bookingId)
+    );
+
+
+    window.location.href =
+        `live-charging.html?booking_id=${encodeURIComponent(bookingId)}`;
+
+}
+
+
+        /* =========================================================
+           REVIEW & RATING SYSTEM
+        ========================================================= */
+
+        let reviewRatings = {
+            overall: 0,
+            charging_speed: 0,
+            availability: 0,
+            cleanliness: 0,
+            staff: 0
+        };
+
+        function resetReviewRatings() {
+
+            reviewRatings = {
+                overall: 0,
+                charging_speed: 0,
+                availability: 0,
+                cleanliness: 0,
+                staff: 0
+            };
+
+            document
+                .querySelectorAll('.star-button')
+                .forEach(button => {
+                    button.classList.remove('selected', 'hover');
+                });
+
+            document
+                .querySelectorAll('.mini-stars button')
+                .forEach(button => {
+                    button.classList.remove('active');
+                });
+
+            updateReviewRatingLabels();
+        }
+
+        function updateReviewRatingLabels() {
+
+            const labels = {
+                overallRatingValue: `${reviewRatings.overall} / 5`,
+                chargingSpeedRatingValue: `${reviewRatings.charging_speed}/5`,
+                availabilityRatingValue: `${reviewRatings.availability}/5`,
+                cleanlinessRatingValue: `${reviewRatings.cleanliness}/5`,
+                staffRatingValue: `${reviewRatings.staff}/5`
+            };
+
+            Object.entries(labels).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = value;
+            });
+        }
+
+        function renderStationRatingSummary(summary) {
+
+            const overallElement = document.getElementById('stationOverallRating');
+            const countElement = document.getElementById('stationReviewCount');
+            const breakdownElement = document.getElementById('stationRatingBreakdown');
+
+            if (!overallElement || !countElement || !breakdownElement) {
+                return;
+            }
+
+            const total = Number(summary?.total_reviews || 0);
+
+            if (!total) {
+                overallElement.textContent = '—';
+                countElement.textContent = 'No reviews yet';
+                breakdownElement.innerHTML = `
+                    <div class="rating-summary-empty">
+                        Be the first to review this charging station.
+                    </div>
+                `;
+                return;
+            }
+
+            const overall = Number(summary.overall_rating || 0);
+
+            overallElement.textContent = overall.toFixed(1);
+            countElement.textContent = `${total} ${total === 1 ? 'Review' : 'Reviews'}`;
+
+            const categories = [
+                ['Charging Speed', Number(summary.charging_speed_rating || 0)],
+                ['Availability', Number(summary.availability_rating || 0)],
+                ['Cleanliness', Number(summary.cleanliness_rating || 0)],
+                ['Staff', Number(summary.staff_rating || 0)]
+            ];
+
+            breakdownElement.innerHTML = categories.map(([label, value]) => `
+                <div class="station-rating-row">
+                    <span class="station-rating-row-label">${escapeHtml(label)}</span>
+                    <div class="station-rating-bar">
+                        <div
+                            class="station-rating-bar-fill"
+                            style="width:${Math.max(0, Math.min(100, value * 20))}%"
+                        ></div>
+                    </div>
+                    <span class="station-rating-row-value">${value.toFixed(1)}</span>
+                </div>
+            `).join('');
+        }
+
+        async function loadStationRatingSummary(stationId) {
+
+            const breakdownElement = document.getElementById('stationRatingBreakdown');
+            const overallElement = document.getElementById('stationOverallRating');
+            const countElement = document.getElementById('stationReviewCount');
+
+            if (!breakdownElement) return;
+
+            breakdownElement.innerHTML = `
+                <div class="rating-summary-loading">
+                    Loading station ratings...
+                </div>
+            `;
+
+            if (overallElement) overallElement.textContent = '—';
+            if (countElement) countElement.textContent = 'Loading reviews...';
+
+            try {
+
+                const response = await fetch(
+                    `${BOOKINGS_API_BASE_URL}/reviews/station/${encodeURIComponent(stationId)}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        cache: 'no-store'
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result?.message || 'Unable to load station ratings.'
+                    );
+                }
+
+                renderStationRatingSummary(
+                    result.summary || {}
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Station rating summary error:',
+                    error
+                );
+
+                if (overallElement) overallElement.textContent = '—';
+                if (countElement) countElement.textContent = 'Ratings unavailable';
+
+                breakdownElement.innerHTML = `
+                    <div class="rating-summary-empty">
+                        Station ratings could not be loaded right now.
+                    </div>
+                `;
+            }
+        }
+
+        async function openReview(
+            bookingId,
+            stationId,
+            encodedStationName
+        ) {
+
+            const numericBookingId = Number(bookingId);
+            const numericStationId = Number(stationId);
+
+            if (
+                !Number.isInteger(numericBookingId) ||
+                numericBookingId <= 0
+            ) {
+                alert('Invalid booking ID.');
+                return;
+            }
+
+            if (
+                !Number.isInteger(numericStationId) ||
+                numericStationId <= 0
+            ) {
+                alert(
+                    'This booking does not have a valid station ID, so a review cannot be submitted yet.'
+                );
+                return;
+            }
+
+            /*
+ * Check the database before opening the review form.
+ * This prevents submitting another review even if
+ * the page has stale data.
+ */
+try {
+
+    const reviewCheckResponse = await fetch(
+        `${BOOKINGS_API_BASE_URL}/reviews/station/${encodeURIComponent(numericStationId)}`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            cache: 'no-store'
+        }
+    );
+
+    if (reviewCheckResponse.ok) {
+
+        const reviewCheck =
+            await reviewCheckResponse.json();
+
+        const stationReviews =
+            Array.isArray(reviewCheck.reviews)
+                ? reviewCheck.reviews
+                : [];
+
+        const alreadyReviewed =
+            stationReviews.some(
+                review =>
+                    Number(review.booking_id) ===
+                    numericBookingId
+            );
+
+        if (alreadyReviewed) {
+
+            alert(
+                'You have already submitted a review for this charging session.'
+            );
+
+            await fetchBookings();
+
+            return;
+        }
+    }
+
+} catch (reviewCheckError) {
+
+    console.warn(
+        'Unable to check existing review:',
+        reviewCheckError
+    );
+}
+
+            document.getElementById('reviewBookingId').value = numericBookingId;
+            document.getElementById('reviewStationId').value = numericStationId;
+
+            let stationName = 'EV Charging Station';
+
+            try {
+                stationName = decodeURIComponent(
+                    String(encodedStationName || '')
+                );
+            } catch (_) {
+                stationName = String(encodedStationName || stationName);
+            }
+
+            document.getElementById('reviewStationName').textContent =
+                stationName || 'EV Charging Station';
+
+            document.getElementById('reviewComment').value = '';
+
+            document.getElementById('reviewAlert').style.display = 'none';
+
+            resetReviewRatings();
+
+            document.getElementById('reviewModal').classList.add('active');
+
+            loadStationRatingSummary(numericStationId);
+
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('reviewModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        // Overall star rating.
+        document
+            .querySelectorAll('.star-container .star-button')
+            .forEach(button => {
+
+                button.addEventListener('click', () => {
+
+                    const value = Number(button.dataset.value);
+                    reviewRatings.overall = value;
+
+                    document
+                        .querySelectorAll('.star-container .star-button')
+                        .forEach(star => {
+                            star.classList.toggle(
+                                'selected',
+                                Number(star.dataset.value) <= value
+                            );
+                        });
+
+                    updateReviewRatingLabels();
+                });
+
+                button.addEventListener('mouseenter', () => {
+
+                    const value = Number(button.dataset.value);
+
+                    document
+                        .querySelectorAll('.star-container .star-button')
+                        .forEach(star => {
+                            star.classList.toggle(
+                                'hover',
+                                Number(star.dataset.value) <= value
+                            );
+                        });
+                });
+
+                button.addEventListener('mouseleave', () => {
+                    document
+                        .querySelectorAll('.star-container .star-button')
+                        .forEach(star => star.classList.remove('hover'));
+                });
+            });
+
+        // Category star ratings.
+        document
+            .querySelectorAll('.mini-stars')
+            .forEach(group => {
+
+                const groupName = group.dataset.ratingGroup;
+
+                group
+                    .querySelectorAll('button')
+                    .forEach(button => {
+
+                        button.addEventListener('click', () => {
+
+                            const value = Number(button.dataset.value);
+                            reviewRatings[groupName] = value;
+
+                            group
+                                .querySelectorAll('button')
+                                .forEach(star => {
+                                    star.classList.toggle(
+                                        'active',
+                                        Number(star.dataset.value) <= value
+                                    );
+                                });
+
+                            updateReviewRatingLabels();
+                        });
+                    });
+            });
+
+        // Submit review.
+        document
+            .getElementById('reviewForm')
+            .addEventListener('submit', async event => {
+
+                event.preventDefault();
+
+                const alertBox = document.getElementById('reviewAlert');
+
+                if (reviewRatings.overall < 1) {
+                    alertBox.textContent = 'Please select your overall rating.';
+                    alertBox.className = 'alert error';
+                    alertBox.style.display = 'block';
+                    return;
+                }
+
+                const categoryRatings = [
+                    reviewRatings.charging_speed,
+                    reviewRatings.availability,
+                    reviewRatings.cleanliness,
+                    reviewRatings.staff
+                ];
+
+                if (categoryRatings.some(rating => rating < 1)) {
+                    alertBox.textContent = 'Please rate Charging Speed, Availability, Cleanliness, and Staff.';
+                    alertBox.className = 'alert error';
+                    alertBox.style.display = 'block';
+                    return;
+                }
+
+                const button = document.getElementById('submitReviewBtn');
+
+                button.disabled = true;
+                button.innerHTML = `
+                    <i data-lucide="loader-circle"></i>
+                    Submitting...
+                `;
+                lucide.createIcons();
+
+                try {
+
+                    const response = await fetch(
+                        `${BOOKINGS_API_BASE_URL}/reviews`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                station_id: Number(
+                                    document.getElementById('reviewStationId').value
+                                ),
+                                booking_id: Number(
+                                    document.getElementById('reviewBookingId').value
+                                ),
+                                rating: reviewRatings.overall,
+                                charging_speed_rating: reviewRatings.charging_speed,
+                                availability_rating: reviewRatings.availability,
+                                cleanliness_rating: reviewRatings.cleanliness,
+                                staff_rating: reviewRatings.staff,
+                                comment: document
+                                    .getElementById('reviewComment')
+                                    .value
+                                    .trim()
+                            })
+                        }
+                    );
+
+                    let result = null;
+
+                    try {
+                        result = await response.json();
+                    } catch (_) {
+                        result = null;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(
+                            result?.message ||
+                            `Failed to submit review. HTTP ${response.status}`
+                        );
+                    }
+
+                    alertBox.textContent = 'Review submitted successfully!';
+                    alertBox.className = 'alert success';
+                    alertBox.style.display = 'block';
+
+                    // Refresh the station summary immediately.
+                    await loadStationRatingSummary(
+                        Number(document.getElementById('reviewStationId').value)
+                    );
+
+                    setTimeout(() => {
+                        closeModal();
+                        fetchBookings();
+                    }, 900);
+
+                } catch (error) {
+
+                    console.error('Review error:', error);
+
+                    alertBox.textContent =
+                        error.message ||
+                        'Failed to submit review.';
+
+                    alertBox.className = 'alert error';
+                    alertBox.style.display = 'block';
+
+                } finally {
+
+                    button.disabled = false;
+                    button.innerHTML = `
+                        <i data-lucide="send"></i>
+                        Submit Review
+                    `;
+                    lucide.createIcons();
+                }
+            });
+
+        /* =========================================================
+           TABS
+        ========================================================= */
+
+        document
+            .querySelectorAll(
+                '.tab-btn'
+            )
+            .forEach(
+                button => {
+
+                    button.addEventListener(
+                        'click',
+                        () => {
+
+                            document
+                                .querySelectorAll(
+                                    '.tab-btn'
+                                )
+                                .forEach(
+                                    tab =>
+                                        tab.classList.remove(
+                                            'active'
+                                        )
+                                );
+
+
+                            button.classList.add(
+                                'active'
+                            );
+
+
+                            renderBookings(
+                                button.dataset.filter
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+
+        /* =========================================================
+           REFRESH
+        ========================================================= */
+
+        document
+            .getElementById(
+                'refreshBtn'
+            )
+            .addEventListener(
+                'click',
+                fetchBookings
+            );
+
+
+        /* =========================================================
+           CLOSE MODAL
+        ========================================================= */
+
+        document
+            .getElementById(
+                'closeModalBtn'
+            )
+            .addEventListener(
+                'click',
+                closeModal
+            );
+
+
+        document
+            .getElementById(
+                'reviewModal'
+            )
+            .addEventListener(
+                'click',
+                event => {
+
+                    if (
+                        event.target.id ===
+                        'reviewModal'
+                    ) {
+
+                        closeModal();
+
+                    }
+
+                }
+            );
+
+
+        document.addEventListener(
+            'keydown',
+            event => {
+
+                if (
+                    event.key ===
+                    'Escape'
+                ) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+
+        /* =========================================================
+           LOGOUT
+        ========================================================= */
+
+        document
+            .getElementById(
+                'navLogoutBtn'
+            )
+            .addEventListener(
+                'click',
+                () => {
+
+                    localStorage.removeItem(
+                        'ev_token'
+                    );
+
+                    localStorage.removeItem(
+                        'ev_user'
+                    );
+
+                    window.location.href =
+                        'login.html';
+
+                }
+            );
+
+
+        /* =========================================================
+           AUTOMATIC REFRESH
+        ========================================================= */
+
+        setInterval(
+            () => {
+
+                if (
+                    document.visibilityState ===
+                    'visible'
+                ) {
+
+                    fetchBookings();
+
+                }
+
+            },
+            10000
+        );
+
+
+        /* =========================================================
+           INITIAL LOAD
+        ========================================================= */
+
+        fetchBookings();
+
+    </script>
+
+</body>
+
+</html>

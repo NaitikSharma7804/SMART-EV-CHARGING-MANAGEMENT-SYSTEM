@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Live Charging Session | EV Charge Hub</title>
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/premium-ui.css"
+    >
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="../js/notifications.js" defer></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f5f8f6;
+            color: #101814;
+            font-family: Inter, Arial, sans-serif;
+        }
+
+        .session-page {
+            min-height: 100vh;
+        }
+
+        /* ==============================
+           NAVBAR
+        ============================== */
+
+        .session-nav {
+            height: 72px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5ebe7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6%;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 20px;
+            color: #101814;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: #22c55e;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            border: 1px solid #dce5df;
+            background: #ffffff;
+            padding: 9px 14px;
+            border-radius: 9px;
+            cursor: pointer;
+            color: #26332b;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .nav-btn:hover {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        /* ==============================
+           PAGE
+        ============================== */
+
+        .session-container {
+            width: min(1100px, 92%);
+            margin: 40px auto 70px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading .eyebrow {
+            color: #16a34a;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+
+        .page-heading h1 {
+            margin: 0;
+            font-size: 34px;
+            line-height: 1.15;
+        }
+
+        .page-heading p {
+            color: #66736b;
+            margin-top: 9px;
+        }
+
+        /* ==============================
+           STATUS
+        ============================== */
+
+        .session-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #dcfce7;
+            color: #15803d;
+            padding: 8px 13px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 22px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 1.4s infinite;
+        }
+
+        @keyframes pulse {
+
+            0% {
+                box-shadow: 0 0 0 0 rgba(34,197,94,.5);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(34,197,94,0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(34,197,94,0);
+            }
+
+        }
+
+        .status-paused {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-paused .status-dot {
+            background: #f59e0b;
+            animation: none;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* ==============================
+           GRID
+        ============================== */
+
+        .session-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 22px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e9e4;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(16, 24, 20, .05);
+        }
+
+        /* ==============================
+           MAIN CHARGING CARD
+        ============================== */
+
+        .charging-card {
+            padding: 30px;
+        }
+
+        .station-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .station-title {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .station-address {
+            color: #69766e;
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        .charger-badge {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 12px 15px;
+            border-radius: 13px;
+            text-align: right;
+            min-width: 125px;
+        }
+
+        .charger-number {
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .charger-type {
+            color: #15803d;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        .charger-power {
+            font-size: 12px;
+            color: #6b756f;
+            margin-top: 3px;
+        }
+
+        /* ==============================
+           BATTERY
+        ============================== */
+
+        .battery-area {
+            text-align: center;
+            padding: 38px 10px 30px;
+        }
+
+        .battery-circle {
+            width: 245px;
+            height: 245px;
+            margin: 0 auto 28px;
+            border-radius: 50%;
+            background:
+                conic-gradient(
+                    #22c55e 0deg,
+                    #22c55e var(--progress),
+                    #e8eee9 var(--progress),
+                    #e8eee9 360deg
+                );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .battery-circle::before {
+            content: "";
+            position: absolute;
+            inset: 13px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .battery-value {
+            position: relative;
+            z-index: 2;
+            font-size: 53px;
+            font-weight: 900;
+            letter-spacing: -2px;
+        }
+
+        .battery-percent {
+            font-size: 18px;
+            color: #68746c;
+            margin-left: 2px;
+        }
+
+        .charging-bar {
+            height: 14px;
+            background: #e7eee9;
+            border-radius: 999px;
+            overflow: hidden;
+            margin: 0 auto;
+            max-width: 620px;
+        }
+
+        .charging-progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(
+                90deg,
+                #16a34a,
+                #22c55e
+            );
+            border-radius: inherit;
+            transition: width .5s ease;
+        }
+
+        .battery-range {
+            margin-top: 13px;
+            font-size: 14px;
+            color: #66736b;
+        }
+
+        .battery-range strong {
+            color: #101814;
+        }
+
+        /* ==============================
+           STATS
+        ============================== */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: 1px solid #edf1ee;
+            margin-top: 10px;
+        }
+
+        .stat {
+            padding: 22px 15px;
+            text-align: center;
+            border-right: 1px solid #edf1ee;
+        }
+
+        .stat:last-child {
+            border-right: none;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7a857e;
+            margin-bottom: 7px;
+        }
+
+        .stat-value {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        /* ==============================
+           RIGHT CARD
+        ============================== */
+
+        .info-card {
+            padding: 25px;
+        }
+
+        .info-card h3 {
+            margin: 0 0 20px;
+            font-size: 18px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 14px 0;
+            border-bottom: 1px solid #edf1ee;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #77827b;
+            font-size: 13px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .cost-box {
+            margin-top: 22px;
+            background: #071512;
+            color: white;
+            border-radius: 16px;
+            padding: 21px;
+        }
+
+        .cost-label {
+            font-size: 12px;
+            opacity: .7;
+        }
+
+        .cost-value {
+            font-size: 32px;
+            font-weight: 900;
+            margin-top: 5px;
+        }
+
+        .cost-note {
+            font-size: 11px;
+            opacity: .6;
+            margin-top: 5px;
+        }
+
+        /* ==============================
+           CONTROLS
+        ============================== */
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .control-btn {
+            flex: 1;
+            border: none;
+            border-radius: 11px;
+            padding: 13px 16px;
+            cursor: pointer;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .pause-btn {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .pause-btn:hover {
+            background: #bbf7d0;
+        }
+
+        .end-btn {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .end-btn:hover {
+            background: #fecaca;
+        }
+
+        .completed-message {
+            display: none;
+            margin-top: 18px;
+            padding: 14px;
+            border-radius: 12px;
+            background: #dcfce7;
+            color: #166534;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        /* ==============================
+           RESPONSIVE
+        ============================== */
+
+        @media (max-width: 850px) {
+
+            .session-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .session-nav {
+                padding: 0 4%;
+            }
+
+            .nav-btn span {
+                display: none;
+            }
+
+            .session-container {
+                width: 94%;
+                margin-top: 25px;
+            }
+
+            .page-heading h1 {
+                font-size: 28px;
+            }
+
+            .charging-card {
+                padding: 20px;
+            }
+
+            .station-header {
+                flex-direction: column;
+            }
+
+            .charger-badge {
+                width: 100%;
+                text-align: left;
+            }
+
+            .battery-circle {
+                width: 205px;
+                height: 205px;
+            }
+
+            .battery-value {
+                font-size: 45px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat {
+                border-right: none;
+                border-bottom: 1px solid #edf1ee;
+            }
+
+            .stat:last-child {
+                border-bottom: none;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="session-page">
+
+    <!-- ==============================
+         NAVBAR
+    ============================== -->
+
+    <nav class="session-nav">
+
+        <a
+            href="dashboard.html"
+            class="brand"
+        >
+
+            <span class="brand-icon">
+                <i data-lucide="zap"></i>
+            </span>
+
+            EV Charge Hub
+
+        </a>
+
+        <div class="nav-actions">
+
+            <a
+                href="bookings.html"
+                class="nav-btn"
+            >
+                <i data-lucide="calendar-days" size="16"></i>
+                <span>My Bookings</span>
+            </a>
+
+            <a
+                href="dashboard.html"
+                class="nav-btn"
+            >
+                <i data-lucide="layout-dashboard" size="16"></i>
+                <span>Dashboard</span>
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <main class="session-container">
+
+        <!-- ==============================
+             HEADING
+        ============================== -->
+
+        <div class="page-heading">
+
+            <div class="eyebrow">
+                Live Charging
+            </div>
+
+            <h1>
+                Charging Session
+            </h1>
+
+            <p>
+                Monitor your simulated EV charging session in real time.
+            </p>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div
+            id="sessionStatus"
+            class="session-status"
+        >
+
+            <span class="status-dot"></span>
+
+            <span id="statusText">
+                Charging in Progress
+            </span>
+
+        </div>
+
+
+        <div class="session-grid">
+
+            <!-- ==============================
+                 MAIN CHARGING
+            ============================== -->
+
+            <section class="card charging-card">
+
+                <div class="station-header">
+
+                    <div>
+
+                        <h2
+                            id="stationName"
+                            class="station-title"
+                        >
+                            Loading station...
+                        </h2>
+
+                        <div
+                            id="stationAddress"
+                            class="station-address"
+                        >
+                            Loading...
+                        </div>
+
+                    </div>
+
+
+                    <div class="charger-badge">
+
+                        <div
+                            id="chargerNumber"
+                            class="charger-number"
+                        >
+                            CH-01
+                        </div>
+
+                        <div
+                            id="chargerType"
+                            class="charger-type"
+                        >
+                            CCS2
+                        </div>
+
+                        <div
+                            id="chargerPower"
+                            class="charger-power"
+                        >
+                            60 kW
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BATTERY -->
+
+                <div class="battery-area">
+
+                    <div
+                        id="batteryCircle"
+                        class="battery-circle"
+                        style="--progress: 0deg;"
+                    >
+
+                        <div>
+
+                            <span
+                                id="batteryValue"
+                                class="battery-value"
+                            >
+                                25
+                            </span>
+
+                            <span class="battery-percent">
+                                %
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="charging-bar">
+
+                        <div
+                            id="chargingProgress"
+                            class="charging-progress"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="battery-range">
+
+                        Battery
+
+                        <strong>
+                            <span id="startBattery">
+                                25
+                            </span>%
+                            →
+                            <span id="targetBattery">
+                                80
+                            </span>%
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- STATS -->
+
+                <div class="stats-grid">
+
+                    <div class="stat">
+
+                        <div class="stat-label">
+                            Energy Delivered
+                        </div>
+
+                        <div
+                            id="energyDelivered"
+                            class="stat-value"
+                        >
+                            0.0 kWh
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="stat-label">
+                            Time Elapsed
+                        </div>
+
+                        <div
+                            id="timeElapsed"
+                            class="stat-value"
+                        >
+                            0 min
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="stat-label">
+                            Estimated Remaining
+                        </div>
+
+                        <div
+                            id="timeRemaining"
+                            class="stat-value"
+                        >
+                            -- min
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==============================
+                 SESSION INFORMATION
+            ============================== -->
+
+            <aside class="card info-card">
+
+                <h3>
+                    Session Information
+                </h3>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Booking ID
+                    </span>
+
+                    <span
+                        id="bookingId"
+                        class="info-value"
+                    >
+                        --
+                    </span>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Vehicle
+                    </span>
+
+                    <span
+                        id="vehicleName"
+                        class="info-value"
+                    >
+                        --
+                    </span>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Battery Capacity
+                    </span>
+
+                    <span
+                        id="batteryCapacity"
+                        class="info-value"
+                    >
+                        --
+                    </span>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Charging Power
+                    </span>
+
+                    <span
+                        id="powerInfo"
+                        class="info-value"
+                    >
+                        --
+                    </span>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span class="info-label">
+                        Charging Rate
+                    </span>
+
+                    <span
+                        id="rateInfo"
+                        class="info-value"
+                    >
+                        ₹15/kWh
+                    </span>
+
+                </div>
+
+
+                <!-- COST -->
+
+                <div class="cost-box">
+
+                    <div class="cost-label">
+                        Estimated Charging Cost
+                    </div>
+
+                    <div
+                        id="chargingCost"
+                        class="cost-value"
+                    >
+                        ₹0.00
+                    </div>
+
+                    <div class="cost-note">
+                        Based on simulated energy delivered
+                    </div>
+
+                </div>
+
+
+                <!-- CONTROLS -->
+
+                <div class="controls">
+
+                    <button
+                        id="pauseButton"
+                        class="control-btn pause-btn"
+                        onclick="toggleCharging()"
+                    >
+
+                        <i
+                            id="pauseIcon"
+                            data-lucide="pause"
+                            size="17"
+                        ></i>
+
+                        <span id="pauseText">
+                            Pause
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        class="control-btn end-btn"
+                        onclick="endSession()"
+                    >
+
+                        <i
+                            data-lucide="square"
+                            size="17"
+                        ></i>
+
+                        End Session
+
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="completedMessage"
+                    class="completed-message"
+                >
+                    Charging session completed successfully.
+                </div>
+
+            </aside>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    /* =====================================================
+       CONFIGURATION
+    ===================================================== */
+
+    const API_BASE_URL =
+        "http://localhost:5000/api";
+
+    const token =
+        localStorage.getItem("ev_token");
+
+
+    /* =====================================================
+       BOOKING ID
+    ===================================================== */
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const bookingId =
+        params.get("booking_id") ||
+        sessionStorage.getItem(
+            "last_booking_id"
+        );
+
+
+    /* =====================================================
+       SESSION STATE
+    ===================================================== */
+
+    let sessionData = null;
+
+    let currentBattery = 25;
+
+    let startBattery = 25;
+
+    let targetBattery = 80;
+
+    let batteryCapacity = 40.5;
+
+    let chargingPower = 60;
+
+    let chargingRate = 15;
+
+    let elapsedMinutes = 0;
+
+    let energyDelivered = 0;
+
+    let isCharging = true;
+
+    let simulationTimer = null;
+
+
+    /* =====================================================
+       INITIALIZE
+    ===================================================== */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        async () => {
+
+            lucide.createIcons();
+
+            if (!bookingId) {
+
+                alert(
+                    "No booking session found."
+                );
+
+                window.location.href =
+                    "bookings.html";
+
+                return;
+
+            }
+
+            document.getElementById(
+                "bookingId"
+            ).textContent =
+                "#" + bookingId;
+
+            await loadBooking();
+
+        }
+    );
+
+
+    /* =====================================================
+       LOAD BOOKING
+    ===================================================== */
+
+    async function loadBooking() {
+
+    try {
+
+        if (!token) {
+
+            alert("Please login first.");
+
+            window.location.href =
+                "login.html";
+
+            return;
+
+        }
+
+
+        /*
+         * We already have this backend endpoint:
+         *
+         * GET /api/bookings/my-bookings
+         *
+         * So we don't need:
+         *
+         * GET /api/bookings/:id
+         */
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/bookings/my-bookings`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`,
+
+                        "Content-Type":
+                            "application/json"
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Unable to load bookings. HTTP ${response.status}`
+            );
+
+        }
+
+
+        const result =
+            await response.json();
+
+
+        console.log(
+            "My bookings response:",
+            result
+        );
+
+
+        /*
+         * Handle the different response
+         * structures your backend may return.
+         */
+
+        const bookings =
+            result.data ||
+            result.bookings ||
+            result.results ||
+            [];
+
+
+        /*
+         * Make sure we have an array.
+         */
+
+        const bookingList =
+            Array.isArray(bookings)
+                ? bookings
+                : [];
+
+
+        /*
+         * Find the REAL booking ID.
+         */
+
+        const booking =
+            bookingList.find(
+                b =>
+                    String(
+                        b.id ??
+                        b.booking_id
+                    ) ===
+                    String(bookingId)
+            );
+
+
+        if (!booking) {
+
+            console.error(
+                "Booking not found.",
+                {
+                    requestedBookingId:
+                        bookingId,
+
+                    bookings:
+                        bookingList
+                }
+            );
+
+
+            throw new Error(
+                `Booking #${bookingId} was not found in your bookings.`
+            );
+
+        }
+
+
+        console.log(
+            "Charging session booking:",
+            booking
+        );
+
+
+        sessionData =
+            booking;
+
+
+        setupSession(
+            booking
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Session loading error:",
+            error
+        );
+
+
+        /*
+         * Try locally saved session data
+         * if available.
+         */
+
+        loadFallbackSession();
+
+    }
+
+}
+
+
+    /* =====================================================
+       SETUP SESSION
+    ===================================================== */
+    let requiredEnergy = 0;
+
+    function setupSession(booking) {
+
+    console.log(
+        "Setting up charging session with:",
+        booking
+    );
+
+
+    /* =========================================
+       VEHICLE / CHARGER OBJECTS
+    ========================================= */
+
+    const vehicle =
+        booking.vehicle ||
+        booking.vehicleData ||
+        {};
+
+    const charger =
+        booking.charger ||
+        booking.chargerData ||
+        {};
+
+
+    /* =========================================
+       STATION
+    ========================================= */
+
+    const stationName =
+        booking.station_name ||
+        booking.stationName ||
+        booking.station ||
+        "EV Charging Station";
+
+
+    const stationAddress =
+        booking.station_address ||
+        booking.address ||
+        booking.stationAddress ||
+        "Charging station";
+
+
+    document.getElementById(
+        "stationName"
+    ).textContent =
+        stationName;
+
+
+    document.getElementById(
+        "stationAddress"
+    ).textContent =
+        stationAddress;
+
+
+    /* =========================================
+       CHARGER NUMBER
+    ========================================= */
+
+    const chargerNumber =
+        booking.charger_number ||
+        charger.charger_number ||
+        booking.chargerNumber ||
+        booking.charger_name ||
+        "CH-01";
+
+
+    document.getElementById(
+        "chargerNumber"
+    ).textContent =
+        chargerNumber;
+
+
+    /* =========================================
+       CONNECTOR TYPE
+    ========================================= */
+
+    const connectorType =
+        booking.connector_type ||
+        charger.connector_type ||
+        booking.connectorType ||
+        "CCS2";
+
+
+    document.getElementById(
+        "chargerType"
+    ).textContent =
+        connectorType;
+
+
+    /* =========================================
+       CHARGING POWER
+    ========================================= */
+
+    chargingPower =
+        Number(
+            booking.power_kw ||
+            charger.power_kw ||
+            booking.charging_power ||
+            booking.chargingSpeed ||
+            60
+        );
+
+
+    if (
+        !Number.isFinite(chargingPower) ||
+        chargingPower <= 0
+    ) {
+
+        chargingPower = 60;
+
+    }
+
+
+    document.getElementById(
+        "chargerPower"
+    ).textContent =
+        `${chargingPower} kW`;
+
+
+    document.getElementById(
+        "powerInfo"
+    ).textContent =
+        `${chargingPower} kW`;
+
+
+    /* =========================================
+       VEHICLE NAME
+    ========================================= */
+
+    const vehicleName =
+        vehicle.vehicle_name ||
+        vehicle.name ||
+        booking.vehicle_name ||
+        booking.vehicleName ||
+        booking.vehicle ||
+        "EV Vehicle";
+
+
+    document.getElementById(
+        "vehicleName"
+    ).textContent =
+        vehicleName;
+
+
+    /* =========================================
+       BATTERY CAPACITY
+    ========================================= */
+
+    batteryCapacity =
+        Number(
+            vehicle.battery_capacity ||
+            booking.battery_capacity ||
+            booking.batteryCapacity ||
+            40.5
+        );
+
+
+    if (
+        !Number.isFinite(batteryCapacity) ||
+        batteryCapacity <= 0
+    ) {
+
+        batteryCapacity = 40.5;
+
+    }
+
+
+    document.getElementById(
+        "batteryCapacity"
+    ).textContent =
+        `${batteryCapacity} kWh`;
+
+
+    /* =========================================
+       BATTERY START %
+    ========================================= */
+
+    startBattery =
+        Number(
+            booking.current_battery ||
+            booking.start_battery ||
+            booking.currentBattery ||
+            25
+        );
+
+
+    if (
+        !Number.isFinite(startBattery)
+    ) {
+
+        startBattery = 25;
+
+    }
+
+
+    /* =========================================
+       TARGET BATTERY %
+    ========================================= */
+
+    targetBattery =
+        Number(
+            booking.target_battery ||
+            booking.targetBattery ||
+            80
+        );
+
+
+    if (
+        !Number.isFinite(targetBattery) ||
+        targetBattery <= startBattery
+    ) {
+
+        targetBattery = 80;
+
+    }
+
+
+    currentBattery =
+        startBattery;
+
+    requiredEnergy =
+    batteryCapacity *
+    (
+        (targetBattery - startBattery) /
+        100
+    );
+
+
+    /* =========================================
+       PRICE PER KWH
+    ========================================= */
+
+    chargingRate =
+        Number(
+            booking.price_per_kwh ||
+            charger.price_per_kwh ||
+            booking.pricePerKwh ||
+            15
+        );
+
+
+    if (
+        !Number.isFinite(chargingRate) ||
+        chargingRate < 0
+    ) {
+
+        chargingRate = 15;
+
+    }
+
+
+    document.getElementById(
+        "rateInfo"
+    ).textContent =
+        `₹${chargingRate}/kWh`;
+
+
+    /* =========================================
+       BATTERY RANGE
+    ========================================= */
+
+    document.getElementById(
+        "startBattery"
+    ).textContent =
+        startBattery;
+
+
+    document.getElementById(
+        "targetBattery"
+    ).textContent =
+        targetBattery;
+
+
+    /* =========================================
+       RESET SIMULATION
+    ========================================= */
+
+    elapsedMinutes = 0;
+
+    energyDelivered = 0;
+
+    isCharging = true;
+
+
+    /* =========================================
+       UPDATE SCREEN
+    ========================================= */
+
+    updateUI();
+
+
+    /* =========================================
+       START SIMULATION
+    ========================================= */
+
+    startSimulation();
+
+}
+
+
+    /* =====================================================
+       FALLBACK
+    ===================================================== */
+
+    function loadFallbackSession() {
+
+        const saved =
+            sessionStorage.getItem(
+                "charging_session"
+            );
+
+
+        if (!saved) {
+
+            alert(
+                "Unable to load charging session."
+            );
+
+            window.location.href =
+                "bookings.html";
+
+            return;
+
+        }
+
+
+        try {
+
+            const data =
+                JSON.parse(saved);
+
+            setupSession(data);
+
+        } catch (error) {
+
+            console.error(error);
+
+            window.location.href =
+                "bookings.html";
+
+        }
+
+    }
+
+
+    /* =====================================================
+       SIMULATION
+    ===================================================== */
+
+    function startSimulation() {
+
+        clearInterval(
+            simulationTimer
+        );
+
+
+        /*
+         * Academic demonstration:
+         *
+         * 1 real second
+         * =
+         * 1 simulated minute
+         */
+
+        simulationTimer =
+            setInterval(
+                () => {
+
+                    if (!isCharging) {
+                        return;
+                    }
+
+
+                    elapsedMinutes += 1;
+
+
+                    /*
+                     * Energy delivered
+                     *
+                     * kW × hours
+                     */
+
+                    const energyPerMinute =
+    chargingPower / 60;
+
+
+/*
+ * Never deliver more energy than
+ * the vehicle actually requires.
+ */
+
+const remainingEnergy =
+    Math.max(
+        requiredEnergy -
+        energyDelivered,
+        0
+    );
+
+
+const energyThisMinute =
+    Math.min(
+        energyPerMinute,
+        remainingEnergy
+    );
+
+
+energyDelivered +=
+    energyThisMinute;
+
+
+                    /*
+                     * Battery increase
+                     */
+
+                    const batteryIncrease =
+                        (
+                            energyDelivered /
+                            batteryCapacity
+                        ) * 100;
+
+
+                    currentBattery =
+                        Math.min(
+                            startBattery +
+                            batteryIncrease,
+                            targetBattery
+                        );
+
+
+                    /*
+                     * Stop when target reached
+                     */
+
+                    if (
+                        currentBattery >=
+                        targetBattery
+                    ) {
+
+                        currentBattery =
+                            targetBattery;
+
+                        finishCharging();
+
+                    }
+
+
+                    updateUI();
+
+                },
+                1000
+            );
+
+    }
+
+
+    /* =====================================================
+       UPDATE UI
+    ===================================================== */
+
+    function updateUI() {
+
+        const chargingRange =
+            targetBattery -
+            startBattery;
+
+
+        const currentProgress =
+            currentBattery -
+            startBattery;
+
+
+        let percentage =
+            chargingRange > 0
+                ? (
+                    currentProgress /
+                    chargingRange
+                ) * 100
+                : 0;
+
+
+        percentage =
+            Math.max(
+                0,
+                Math.min(
+                    percentage,
+                    100
+                )
+            );
+
+
+        document.getElementById(
+            "batteryValue"
+        ).textContent =
+            Math.round(
+                currentBattery
+            );
+
+
+        document.getElementById(
+            "chargingProgress"
+        ).style.width =
+            percentage + "%";
+
+
+        document.getElementById(
+            "batteryCircle"
+        ).style.setProperty(
+            "--progress",
+            `${percentage * 3.6}deg`
+        );
+
+
+        document.getElementById(
+            "energyDelivered"
+        ).textContent =
+            `${energyDelivered.toFixed(1)} kWh`;
+
+
+        document.getElementById(
+            "timeElapsed"
+        ).textContent =
+            `${elapsedMinutes} min`;
+
+
+        /*
+         * Remaining energy
+         */
+
+        const remainingBattery =
+            Math.max(
+                targetBattery -
+                currentBattery,
+                0
+            );
+
+
+        const remainingEnergy =
+            batteryCapacity *
+            (
+                remainingBattery /
+                100
+            );
+
+
+        const remainingMinutes =
+            chargingPower > 0
+                ? Math.ceil(
+                    (
+                        remainingEnergy /
+                        chargingPower
+                    ) * 60
+                )
+                : 0;
+
+
+        document.getElementById(
+            "timeRemaining"
+        ).textContent =
+            `${remainingMinutes} min`;
+
+
+        /*
+         * Cost
+         */
+
+        const cost =
+            energyDelivered *
+            chargingRate;
+
+
+        document.getElementById(
+            "chargingCost"
+        ).textContent =
+            `₹${cost.toFixed(2)}`;
+
+    }
+
+
+    /* =====================================================
+       PAUSE / RESUME
+    ===================================================== */
+
+    function toggleCharging() {
+
+        if (
+            currentBattery >=
+            targetBattery
+        ) {
+            return;
+        }
+
+
+        isCharging =
+            !isCharging;
+
+
+        const status =
+            document.getElementById(
+                "sessionStatus"
+            );
+
+
+        const statusText =
+            document.getElementById(
+                "statusText"
+            );
+
+
+        const pauseText =
+            document.getElementById(
+                "pauseText"
+            );
+
+
+        const pauseIcon =
+            document.getElementById(
+                "pauseIcon"
+            );
+
+
+        if (isCharging) {
+
+            status.classList.remove(
+                "status-paused"
+            );
+
+
+            statusText.textContent =
+                "Charging in Progress";
+
+
+            pauseText.textContent =
+                "Pause";
+
+
+            pauseIcon.setAttribute(
+                "data-lucide",
+                "pause"
+            );
+
+        } else {
+
+            status.classList.add(
+                "status-paused"
+            );
+
+
+            statusText.textContent =
+                "Charging Paused";
+
+
+            pauseText.textContent =
+                "Resume";
+
+
+            pauseIcon.setAttribute(
+                "data-lucide",
+                "play"
+            );
+
+        }
+
+
+        lucide.createIcons();
+
+    }
+
+
+    /* =====================================================
+       COMPLETE
+    ===================================================== */
+
+    async function finishCharging() {
+
+    clearInterval(
+        simulationTimer
+    );
+
+    isCharging = false;
+
+    currentBattery =
+        targetBattery;
+
+
+    updateUI();
+
+
+    const status =
+        document.getElementById(
+            "sessionStatus"
+        );
+
+    status.classList.remove(
+        "status-paused"
+    );
+
+    status.classList.add(
+        "status-completed"
+    );
+
+
+    document.getElementById(
+        "statusText"
+    ).textContent =
+        "Charging Completed";
+
+
+    document.getElementById(
+        "completedMessage"
+    ).style.display =
+        "block";
+
+
+    document.getElementById(
+        "completedMessage"
+    ).textContent =
+        "Charging completed. Updating booking...";
+
+
+    document.getElementById(
+        "pauseButton"
+    ).disabled = true;
+
+
+    /*
+     * Save final charging result
+     */
+
+    const finalCost =
+        energyDelivered *
+        chargingRate;
+
+
+    const result = {
+
+        booking_id:
+            bookingId,
+
+        energy_delivered:
+            Number(
+                energyDelivered.toFixed(2)
+            ),
+
+        battery_percentage:
+            Number(
+                currentBattery.toFixed(1)
+            ),
+
+        elapsed_minutes:
+            elapsedMinutes,
+
+        cost:
+            Number(
+                finalCost.toFixed(2)
+            ),
+
+        completed_at:
+            new Date().toISOString()
+
+    };
+
+
+    localStorage.setItem(
+        `charging_result_${bookingId}`,
+        JSON.stringify(result)
+    );
+
+
+    /*
+     * Update actual MySQL booking
+     */
+
+    try {
+
+        await updateBookingStatus(
+            bookingId,
+            "Completed"
+        );
+
+
+        document.getElementById(
+            "completedMessage"
+        ).textContent =
+            "Charging completed successfully. Booking updated.";
+
+
+        setTimeout(() => {
+
+            window.location.href =
+                "bookings.html";
+
+        }, 1500);
+
+
+    } catch (error) {
+
+        console.error(
+            "Automatic booking completion failed:",
+            error
+        );
+
+
+        document.getElementById(
+            "completedMessage"
+        ).textContent =
+            "Charging completed, but the booking status could not be updated.";
+
+    }
+
+}
+
+
+    /* =====================================================
+       UPDATE BOOKING STATUS
+    ===================================================== */
+
+    async function updateBookingStatus(id, status) {
+
+        if (!token) {
+            throw new Error("Authentication token missing.");
+        }
+
+        const response = await fetch(
+            `${API_BASE_URL}/bookings/${encodeURIComponent(id)}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ status })
+            }
+        );
+
+        let result = {};
+        try {
+            result = await response.json();
+        } catch (_) {
+            result = {};
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                result.message ||
+                result.error ||
+                `Unable to update booking status. HTTP ${response.status}`
+            );
+        }
+
+        return result;
+    }
+
+
+    /* =====================================================
+       END SESSION
+    ===================================================== */
+
+    async function endSession() {
+
+    const confirmed = confirm(
+        "Are you sure you want to end this charging session?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    /*
+     * Stop simulation
+     */
+    clearInterval(simulationTimer);
+
+    isCharging = false;
+
+
+    /*
+     * Update UI immediately
+     */
+    document.getElementById(
+        "statusText"
+    ).textContent = "Session Ended";
+
+
+    document.getElementById(
+        "sessionStatus"
+    ).className =
+        "session-status status-completed";
+
+
+    document.getElementById(
+        "completedMessage"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "completedMessage"
+    ).textContent =
+        "Ending charging session and updating your booking...";
+
+
+    document.getElementById(
+        "pauseButton"
+    ).disabled = true;
+
+
+    /*
+     * Calculate final result
+     */
+    const finalCost =
+        energyDelivered * chargingRate;
+
+
+    const result = {
+
+        booking_id: bookingId,
+
+        energy_delivered:
+            Number(
+                energyDelivered.toFixed(2)
+            ),
+
+        battery_percentage:
+            Number(
+                currentBattery.toFixed(1)
+            ),
+
+        elapsed_minutes:
+            elapsedMinutes,
+
+        cost:
+            Number(
+                finalCost.toFixed(2)
+            ),
+
+        completed_at:
+            new Date().toISOString()
+
+    };
+
+
+    /*
+     * Save charging result locally
+     */
+    localStorage.setItem(
+        `charging_result_${bookingId}`,
+        JSON.stringify(result)
+    );
+
+
+    /*
+     * ==========================================
+     * IMPORTANT:
+     * Update the REAL booking in MySQL
+     * ==========================================
+     */
+
+    try {
+
+    await updateBookingStatus(
+        bookingId,
+        "Completed"
+    );
+
+
+    document.getElementById(
+        "completedMessage"
+    ).textContent =
+        "Charging session completed successfully. Booking updated.";
+
+
+    setTimeout(() => {
+
+        window.location.href =
+            "bookings.html";
+
+    }, 1200);
+
+
+} catch (error) {
+
+    console.error(
+        "Booking status update failed:",
+        error
+    );
+
+
+    document.getElementById(
+        "completedMessage"
+    ).textContent =
+        "Charging ended, but the booking status could not be updated.";
+}
+
+
+    }
+
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,6132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Book Charging Slot | EV Charge Hub</title>
+
+    <!-- Lucide -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="../js/notifications.js" defer></script>
+
+    <!-- Razorpay -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #f5f8f6;
+            color: #101814;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        /* =====================================================
+           NAVBAR
+        ===================================================== */
+
+        .navbar {
+            height: 72px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5ebe7;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 6%;
+
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            font-size: 21px;
+            font-weight: 800;
+            color: #101814;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+
+            border-radius: 11px;
+
+            background: #dcfce7;
+            color: #15803d;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links a {
+            padding: 10px 15px;
+            border-radius: 9px;
+
+            color: #64706a;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            transition: .2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #15803d;
+            background: #ecfdf3;
+        }
+
+        .logout-btn {
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        /* =====================================================
+           PAGE
+        ===================================================== */
+
+        .page {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 42px 24px 70px;
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            color: #15803d;
+
+            font-size: 14px;
+            font-weight: 700;
+
+            margin-bottom: 16px;
+        }
+
+        .page-header h1 {
+            font-size: 34px;
+            line-height: 1.15;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .page-header p {
+            color: #6b756f;
+            font-size: 15px;
+        }
+
+        /* =====================================================
+           GRID
+        ===================================================== */
+
+        .booking-grid {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1.45fr)
+                minmax(330px, .75fr);
+
+            gap: 24px;
+            align-items: start;
+        }
+
+        .card {
+            background: #ffffff;
+
+            border: 1px solid #e6ebe8;
+            border-radius: 20px;
+
+            box-shadow:
+                0 8px 28px rgba(16, 24, 20, .045);
+        }
+
+        .card-header {
+            padding: 22px 24px;
+            border-bottom: 1px solid #edf1ef;
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .card-header p {
+            color: #758079;
+            font-size: 13px;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* =====================================================
+           STATION
+        ===================================================== */
+
+        .station-card {
+            overflow: hidden;
+        }
+
+        .station-banner {
+            min-height: 170px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #071512,
+                    #12352a
+                );
+
+            padding: 28px;
+
+            color: white;
+            position: relative;
+        }
+
+        .station-banner::after {
+            content: "";
+
+            position: absolute;
+
+            width: 180px;
+            height: 180px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(34, 197, 94, .08);
+
+            right: -40px;
+            top: -50px;
+        }
+
+        .station-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            padding: 6px 10px;
+
+            border-radius: 999px;
+
+            background: rgba(255,255,255,.09);
+            color: #bbf7d0;
+
+            font-size: 11px;
+            font-weight: 800;
+
+            text-transform: uppercase;
+            letter-spacing: .6px;
+
+            margin-bottom: 15px;
+        }
+
+        .station-banner h2 {
+            font-size: 25px;
+
+            position: relative;
+            z-index: 2;
+
+            margin-bottom: 8px;
+        }
+
+        .station-banner-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+            margin-bottom: 8px;
+        }
+
+        .station-banner-title-row h2 {
+            margin: 0;
+        }
+
+        .booking-fav-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            color: #ffffff;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 19px;
+            line-height: 1;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .booking-fav-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #fca5a5;
+            color: #ef4444;
+            transform: scale(1.15);
+        }
+
+        .booking-fav-btn.active {
+            background: #ffffff;
+            border-color: #ffffff;
+            color: #ef4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
+            transform: scale(1.05);
+        }
+
+        .booking-fav-btn.active span {
+            display: inline-block;
+            animation: heartPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes heartPop {
+            0% { transform: scale(0.7); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+
+        .station-address {
+            color: #c8d6cf;
+
+            font-size: 13px;
+
+            position: relative;
+            z-index: 2;
+
+            max-width: 650px;
+        }
+
+        .station-info {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 12px;
+
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: #f7faf8;
+            border: 1px solid #e8eeea;
+
+            padding: 14px;
+
+            border-radius: 13px;
+        }
+
+        .info-box span {
+            display: block;
+
+            font-size: 11px;
+            color: #7a857e;
+
+            margin-bottom: 5px;
+        }
+
+        .info-box strong {
+            font-size: 14px;
+        }
+
+        /* =====================================================
+           FEATURE 19: STATION ROUTE & NAVIGATION
+        ===================================================== */
+        .station-route-card {
+            margin-top: 18px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #f0fdf4, #f8fafc);
+            border: 1px solid #bbf7d0;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .route-meta-group {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .route-distance-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid #dcfce7;
+            font-size: 15px;
+            font-weight: 800;
+            color: #15803d;
+            box-shadow: 0 2px 5px rgba(21, 128, 61, 0.08);
+        }
+
+        .route-distance-chip .route-pin {
+            font-size: 17px;
+            line-height: 1;
+        }
+
+        .route-time-block {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .route-time-block .route-time-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+        }
+
+        .route-time-block .route-time-val {
+            font-size: 17px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .route-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-get-directions {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: #16a34a;
+            color: #ffffff;
+            font-size: 13.5px;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .btn-get-directions:hover {
+            background: #15803d;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
+        }
+
+        .btn-report-problem-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 16px;
+            background: #fff1f2;
+            color: #e11d48;
+            font-size: 13.5px;
+            font-weight: 700;
+            border: 1px solid #fecdd3;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-report-problem-trigger:hover {
+            background: #ffe4e6;
+            border-color: #fda4af;
+            transform: translateY(-1px);
+        }
+
+        /* =====================================================
+           FEATURE 18: REPORT A PROBLEM MODAL
+        ===================================================== */
+        .report-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeInReport 0.2s ease;
+        }
+
+        .report-modal-box {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            animation: scaleUpReport 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .report-modal-header {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #ffffff;
+            padding: 22px 26px;
+            position: relative;
+        }
+
+        .report-modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .report-modal-header p {
+            margin: 6px 0 0;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .report-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #cbd5e1;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .report-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .report-modal-body {
+            padding: 24px 26px;
+        }
+
+        .report-field {
+            margin-bottom: 18px;
+        }
+
+        .report-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .report-static-val {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            padding: 10px 14px;
+            border-radius: 10px;
+        }
+
+        .report-input-select {
+            width: 100%;
+            padding: 10px 14px;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .report-input-select:focus {
+            border-color: #16a34a;
+        }
+
+        .report-radio-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .problem-radio-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .problem-radio-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .problem-radio-item input[type="radio"] {
+            accent-color: #16a34a;
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
+        }
+
+        .problem-radio-item.selected {
+            background: #ecfdf5;
+            border-color: #10b981;
+            color: #065f46;
+            font-weight: 700;
+        }
+
+        .report-textarea-field {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13.5px;
+            color: #0f172a;
+            outline: none;
+            resize: vertical;
+            transition: border-color 0.15s;
+            box-sizing: border-box;
+        }
+
+        .report-textarea-field:focus {
+            border-color: #16a34a;
+        }
+
+        .report-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .report-btn-secondary {
+            padding: 11px 20px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .report-btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .report-btn-submit {
+            padding: 11px 24px;
+            background: #16a34a;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+            transition: all 0.2s;
+        }
+
+        .report-btn-submit:hover {
+            background: #15803d;
+            transform: translateY(-1px);
+        }
+
+        .report-toast-alert {
+            margin-top: 15px;
+            padding: 14px 16px;
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #166534;
+        }
+
+        @keyframes fadeInReport {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleUpReport {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* =====================================================
+           NEARBY PLACES
+        ===================================================== */
+
+
+.nearby-card {
+    margin-top: 24px;
+    overflow: hidden;
+}
+
+.nearby-header {
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid #edf1ef;
+}
+
+.nearby-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.nearby-title {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.nearby-title-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+
+    background: #ecfdf3;
+    color: #15803d;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nearby-title h2 {
+    font-size: 18px;
+    margin: 0 0 3px;
+}
+
+.nearby-title p {
+    color: #758079;
+    font-size: 12px;
+    margin: 0;
+}
+
+.nearby-count {
+    padding: 6px 10px;
+
+    border-radius: 999px;
+
+    background: #ecfdf3;
+    color: #15803d;
+
+    font-size: 11px;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+/* CATEGORY FILTERS */
+
+.nearby-filters {
+    display: flex;
+    gap: 7px;
+
+    padding: 14px 24px;
+
+    overflow-x: auto;
+
+    border-bottom: 1px solid #edf1ef;
+}
+
+.nearby-filters::-webkit-scrollbar {
+    height: 0;
+}
+
+.nearby-filter {
+    border: 1px solid #dfe7e2;
+
+    background: #ffffff;
+
+    color: #64706a;
+
+    padding: 8px 11px;
+
+    border-radius: 9px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition: all .2s ease;
+}
+
+.nearby-filter:hover {
+    border-color: #86efac;
+    color: #15803d;
+    background: #f0fdf4;
+}
+
+.nearby-filter.active {
+    background: #15803d;
+    border-color: #15803d;
+    color: #ffffff;
+}
+
+/* PLACES LIST */
+
+.nearby-list {
+    padding: 15px 24px 22px;
+
+    display: grid;
+
+    gap: 10px;
+}
+
+/* PLACE CARD */
+
+.nearby-place {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 14px;
+
+    border: 1px solid #e5ebe7;
+
+    border-radius: 13px;
+
+    background: #fbfdfc;
+
+    transition: all .2s ease;
+}
+
+.nearby-place:hover {
+    border-color: #bbf7d0;
+
+    background: #f7fdf9;
+
+    transform: translateY(-1px);
+}
+
+.nearby-place-main {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    min-width: 0;
+}
+
+.nearby-place-icon {
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    border-radius: 12px;
+
+    background: #ecfdf3;
+
+    color: #15803d;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nearby-place-info {
+    min-width: 0;
+}
+
+.nearby-place-name {
+    font-size: 13px;
+
+    font-weight: 800;
+
+    color: #17221c;
+
+    margin-bottom: 4px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.nearby-place-meta {
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    font-size: 10px;
+
+    color: #68736d;
+}
+
+.nearby-place-type {
+    color: #15803d;
+
+    font-weight: 700;
+
+    text-transform: capitalize;
+}
+
+.nearby-rating {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 3px;
+
+    color: #a16207;
+
+    font-weight: 700;
+}
+
+.nearby-distance {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 3px;
+
+    color: #47534c;
+
+    font-weight: 700;
+}
+
+.nearby-open {
+    color: #15803d;
+
+    font-weight: 700;
+}
+
+.nearby-closed {
+    color: #dc2626;
+
+    font-weight: 700;
+}
+
+.nearby-address {
+    margin-top: 5px;
+
+    color: #87918b;
+
+    font-size: 10px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    max-width: 460px;
+}
+
+/* DIRECTIONS */
+
+.nearby-directions {
+    flex-shrink: 0;
+
+    border: 1px solid #bbf7d0;
+
+    background: #ecfdf3;
+
+    color: #15803d;
+
+    border-radius: 9px;
+
+    padding: 8px 10px;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.nearby-directions:hover {
+    background: #15803d;
+
+    color: #ffffff;
+
+    border-color: #15803d;
+}
+
+/* LOADING / EMPTY */
+
+.nearby-loading,
+.nearby-empty,
+.nearby-error {
+    padding: 28px 15px;
+
+    text-align: center;
+
+    color: #758079;
+}
+
+.nearby-loading-icon,
+.nearby-empty-icon,
+.nearby-error-icon {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 12px;
+
+    margin: 0 auto 10px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+}
+
+.nearby-loading-icon {
+    background: #ecfdf3;
+    color: #15803d;
+}
+
+.nearby-empty-icon {
+    background: #f3f6f4;
+    color: #758079;
+}
+
+.nearby-error-icon {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.nearby-loading strong,
+.nearby-empty strong,
+.nearby-error strong {
+    display: block;
+
+    color: #26322b;
+
+    font-size: 13px;
+
+    margin-bottom: 4px;
+}
+
+.nearby-loading span,
+.nearby-empty span,
+.nearby-error span {
+    font-size: 11px;
+}
+
+/* SPINNER */
+
+.nearby-spinner {
+    width: 18px;
+    height: 18px;
+
+    border: 2px solid #bbf7d0;
+
+    border-top-color: #15803d;
+
+    border-radius: 50%;
+
+    animation: nearbySpin .7s linear infinite;
+
+    margin: 0 auto 10px;
+}
+
+@keyframes nearbySpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+    .nearby-header {
+        padding: 18px 17px 14px;
+    }
+
+    .nearby-filters {
+        padding: 12px 17px;
+    }
+
+    .nearby-list {
+        padding: 12px 17px 18px;
+    }
+
+    .nearby-place {
+        align-items: flex-start;
+    }
+
+    .nearby-directions {
+        padding: 7px 8px;
+    }
+
+    .nearby-address {
+        max-width: 240px;
+    }
+
+}
+
+        /* =====================================================
+           FORM
+        ===================================================== */
+
+        .form-group {
+            margin-bottom: 19px;
+        }
+
+        .form-group label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            color: #303b35;
+        }
+
+        .input,
+        .select {
+            width: 100%;
+
+            border: 1px solid #dfe6e2;
+
+            background: #ffffff;
+
+            border-radius: 11px;
+
+            padding: 13px 14px;
+
+            color: #17221c;
+
+            outline: none;
+
+            transition: .2s;
+        }
+
+        .input:focus,
+        .select:focus {
+            border-color: #22c55e;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(34,197,94,.10);
+        }
+
+        .input:disabled,
+        .select:disabled {
+            background: #f4f7f5;
+            cursor: not-allowed;
+        }
+
+        .two-columns {
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 14px;
+        }
+
+        /* =====================================================
+           VEHICLE HELP
+        ===================================================== */
+
+        .vehicle-help {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 10px;
+
+            margin-top: 8px;
+
+            padding: 11px 12px;
+
+            border-radius: 10px;
+
+            background: #f7faf8;
+            border: 1px solid #e6ebe8;
+
+            font-size: 12px;
+            color: #6d7871;
+        }
+
+        .vehicle-help a {
+            color: #15803d;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        /* =====================================================
+           CHARGERS
+        ===================================================== */
+
+        .charger-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .charger-option {
+            position: relative;
+        }
+
+        .charger-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .charger-option label {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 12px;
+
+            padding: 15px;
+
+            border: 1px solid #dfe7e2;
+
+            border-radius: 13px;
+
+            cursor: pointer;
+
+            transition: .2s;
+        }
+
+        .charger-option label:hover {
+            border-color: #86efac;
+            background: #f7fff9;
+        }
+
+        .charger-option input:checked + label {
+            border-color: #22c55e;
+
+            background: #ecfdf3;
+
+            box-shadow:
+                0 0 0 2px
+                rgba(34,197,94,.08);
+        }
+
+        .charger-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .charger-icon {
+            width: 38px;
+            height: 38px;
+
+            flex-shrink: 0;
+
+            border-radius: 10px;
+
+            background: #dcfce7;
+            color: #15803d;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .charger-name {
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .charger-meta {
+            color: #748078;
+
+            font-size: 11px;
+
+            margin-top: 3px;
+        }
+
+        .charger-price {
+            font-weight: 800;
+            color: #15803d;
+            white-space: nowrap;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+
+            margin-top: 5px;
+
+            font-size: 10px;
+            font-weight: 700;
+
+            color: #15803d;
+        }
+
+
+        /* =====================================================
+           CHARGING COST CALCULATOR
+        ===================================================== */
+        .calculator-card{margin-top:24px;overflow:hidden}
+        .calculator-header{padding:22px 24px 16px;border-bottom:1px solid #edf1ef}
+        .calculator-title-row{display:flex;align-items:center;justify-content:space-between;gap:15px}
+        .calculator-title{display:flex;align-items:center;gap:11px}
+        .calculator-title-icon{width:38px;height:38px;border-radius:11px;background:#ecfdf3;color:#15803d;display:flex;align-items:center;justify-content:center}
+        .calculator-title h2{font-size:18px;margin:0 0 3px}
+        .calculator-title p{color:#758079;font-size:12px;margin:0}
+        .calculator-badge{padding:6px 10px;border-radius:999px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;font-size:10px;font-weight:800;white-space:nowrap}
+        .calculator-body{padding:20px 24px 24px}
+        .calculator-input-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+        .calculator-input-box{padding:13px;border:1px solid #e4ebe7;background:#fbfdfc;border-radius:12px}
+        .calculator-input-box label{display:block;color:#6f7b74;font-size:10px;font-weight:700;margin-bottom:7px}
+        .calculator-input-box input{width:100%;border:1px solid #dfe7e2;border-radius:9px;padding:9px 10px;outline:none;background:#fff;color:#17221c;font-weight:800;font-size:13px}
+        .calculator-input-box input:focus{border-color:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.10)}
+        .calculator-input-unit{color:#7a857f;font-size:10px;margin-top:5px}
+        .calculator-results{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+        .calculator-result{padding:14px;border:1px solid #e5ebe7;background:#f7faf8;border-radius:12px}
+        .calculator-result span{display:block;color:#748078;font-size:10px;margin-bottom:6px}
+        .calculator-result strong{display:block;color:#17221c;font-size:15px;font-weight:850}
+        .calculator-result.highlight{background:#ecfdf3;border-color:#bbf7d0}
+        .calculator-result.highlight strong{color:#15803d}
+        .calculator-note{display:flex;align-items:flex-start;gap:7px;margin-top:13px;padding:10px 12px;border-radius:10px;background:#f8faf9;color:#758079;font-size:10px;line-height:1.5}
+        .calculator-note i{color:#15803d;flex-shrink:0;margin-top:1px}
+        .calculator-invalid{display:none;margin-top:12px;padding:10px 12px;border-radius:10px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:11px;font-weight:700}
+        .calculator-invalid.show{display:block}
+        @media(max-width:850px){.calculator-input-grid{grid-template-columns:1fr 1fr 1fr}.calculator-results{grid-template-columns:1fr 1fr}}
+        @media(max-width:600px){.calculator-header,.calculator-body{padding-left:18px;padding-right:18px}.calculator-title-row{align-items:flex-start}.calculator-badge{display:none}.calculator-input-grid{grid-template-columns:1fr}.calculator-results{grid-template-columns:1fr 1fr}}
+        /* =====================================================
+           SUMMARY
+        ===================================================== */
+
+        .summary-card {
+            position: sticky;
+            top: 94px;
+        }
+
+        .summary-body {
+            padding: 24px;
+        }
+
+        .summary-row {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+
+            padding: 11px 0;
+
+            font-size: 14px;
+        }
+
+        .summary-row span:first-child {
+            color: #707b74;
+        }
+
+        .summary-row strong {
+            color: #1b261f;
+            text-align: right;
+        }
+
+        .summary-divider {
+            border-top: 1px dashed #dfe7e2;
+            margin: 10px 0;
+        }
+
+        .total-row {
+            padding-top: 15px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .total-row span {
+            font-weight: 800;
+        }
+
+        .total-row strong {
+            font-size: 25px;
+            color: #15803d;
+        }
+
+        .book-btn {
+            width: 100%;
+
+            border: 0;
+
+            background: #15803d;
+            color: white;
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            margin-top: 20px;
+
+            font-size: 15px;
+            font-weight: 800;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+        }
+
+        .book-btn:hover {
+            background: #166534;
+            transform: translateY(-1px);
+        }
+
+        .book-btn:disabled {
+            background: #a7b5ad;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secure-note {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 7px;
+
+            margin-top: 13px;
+
+            color: #7a857f;
+
+            font-size: 11px;
+        }
+
+        /* =====================================================
+           ALERTS
+        ===================================================== */
+
+        .alert {
+            padding: 13px 15px;
+
+            border-radius: 11px;
+
+            margin-bottom: 18px;
+
+            font-size: 13px;
+
+            display: none;
+        }
+
+        .alert.show {
+            display: flex;
+
+            align-items: flex-start;
+
+            gap: 9px;
+        }
+
+        .alert.error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .alert.success {
+            background: #ecfdf3;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        /* =====================================================
+           LOADING
+        ===================================================== */
+
+        .loading {
+            padding: 35px;
+
+            text-align: center;
+
+            color: #7a857f;
+
+            font-size: 14px;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+
+            border: 2px solid #d1fae5;
+            border-top-color: #15803d;
+
+            border-radius: 50%;
+
+            animation:
+                spin .7s linear infinite;
+
+            display: inline-block;
+
+            vertical-align: middle;
+
+            margin-right: 7px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =====================================================
+           EMPTY
+        ===================================================== */
+
+        .empty {
+            text-align: center;
+
+            padding: 35px 20px;
+
+            color: #78827c;
+        }
+
+        .empty-icon {
+            width: 48px;
+            height: 48px;
+
+            border-radius: 14px;
+
+            background: #ecfdf3;
+            color: #15803d;
+
+            margin: 0 auto 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty strong {
+            display: block;
+            color: #202a24;
+            font-size: 14px;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 850px) {
+
+            .navbar {
+                padding: 0 20px;
+            }
+
+            .nav-links a {
+                display: none;
+            }
+
+            .booking-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-card {
+                position: static;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .page {
+                padding:
+                    28px 15px 50px;
+            }
+
+            .page-header h1 {
+                font-size: 27px;
+            }
+
+            .station-info {
+                grid-template-columns: 1fr;
+            }
+
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+
+            .card-body,
+            .summary-body {
+                padding: 18px;
+            }
+
+            .station-banner {
+                padding: 22px;
+            }
+
+            .station-banner h2 {
+                font-size: 21px;
+            }
+
+            .charger-option label {
+                padding: 13px;
+            }
+
+            .charger-price {
+                font-size: 13px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- =====================================================
+         NAVBAR
+    ===================================================== -->
+
+    <nav class="navbar">
+
+        <a href="dashboard.html" class="brand">
+
+            <span class="brand-icon">
+                <i data-lucide="zap"></i>
+            </span>
+
+            EV Charge Hub
+
+        </a>
+
+        <div class="nav-links">
+
+            <a href="dashboard.html">
+                Dashboard
+            </a>
+
+            <a href="search.html" class="active">
+                Find Chargers
+            </a>
+
+            <a href="bookings.html">
+                My Bookings
+            </a>
+
+            <a
+                href="#"
+                class="logout-btn"
+                onclick="logout(); return false;"
+            >
+                Logout
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- =====================================================
+         PAGE
+    ===================================================== -->
+
+    <main class="page">
+
+        <div class="page-header">
+
+            <a href="search.html" class="back-link">
+
+                <i
+                    data-lucide="arrow-left"
+                    size="16"
+                ></i>
+
+                Back to chargers
+
+            </a>
+
+            <h1>
+                Book a Charging Session
+            </h1>
+
+            <p>
+                Select your vehicle, charger and preferred charging time.
+            </p>
+
+        </div>
+
+
+        <!-- ERROR -->
+
+        <div
+            id="errorAlert"
+            class="alert error"
+        >
+
+            <i
+                data-lucide="circle-alert"
+                size="17"
+            ></i>
+
+            <span id="errorMessage"></span>
+
+        </div>
+
+
+        <!-- SUCCESS -->
+
+        <div
+            id="successAlert"
+            class="alert success"
+        >
+
+            <i
+                data-lucide="circle-check"
+                size="17"
+            ></i>
+
+            <span id="successMessage"></span>
+
+        </div>
+
+
+        <!-- LOADING -->
+
+        <div
+            id="loadingState"
+            class="loading"
+        >
+
+            <span class="spinner"></span>
+
+            Loading charging station...
+
+        </div>
+
+
+        <!-- =================================================
+             BOOKING CONTENT
+        ================================================== -->
+
+        <div
+            id="bookingContent"
+            class="booking-grid"
+            style="display:none;"
+        >
+
+            <!-- =================================================
+                 LEFT
+            ================================================= -->
+
+            <section>
+
+                <!-- STATION CARD -->
+
+                <div class="card station-card">
+
+                    <div class="station-banner">
+
+                        <div class="station-label">
+
+                            <i
+                                data-lucide="map-pin"
+                                size="13"
+                            ></i>
+
+                            Charging Station
+
+                        </div>
+
+                        <div class="station-banner-title-row">
+                            <h2 id="stationName">
+                                Charging Station
+                            </h2>
+                            <button
+                                type="button"
+                                class="booking-fav-btn"
+                                id="bookingFavBtn"
+                                onclick="handleToggleBookingStationFavorite(event)"
+                                title="Save to favorites"
+                                aria-label="Save to favorites"
+                            >
+                                <span id="bookingFavSymbol">♡</span>
+                            </button>
+                        </div>
+
+                        <div
+                            class="station-address"
+                            id="stationAddress"
+                        >
+                            Loading...
+                        </div>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="station-info">
+
+                            <div class="info-box">
+
+                                <span>
+                                    Operator
+                                </span>
+
+                                <strong id="stationOperator">
+                                    —
+                                </strong>
+
+                            </div>
+
+                            <div class="info-box">
+
+                                <span>
+                                    Rating
+                                </span>
+
+                                <strong id="stationRating">
+                                    —
+                                </strong>
+
+                            </div>
+
+                            <div class="info-box">
+
+                                <span>
+                                    Availability
+                                </span>
+
+                                <strong id="stationStatus">
+                                    —
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                        <!-- FEATURE 19: STATION ROUTE / NAVIGATION & FEATURE 18: PROBLEM REPORTING TRIGGER -->
+                        <div class="station-route-card" id="stationRouteCard">
+                            <div class="route-meta-group">
+                                <div class="route-distance-chip">
+                                    <span class="route-pin">📍</span>
+                                    <span id="stationRouteDistance">2.4 km away</span>
+                                </div>
+                                <div class="route-time-block">
+                                    <span class="route-time-label">Estimated travel time</span>
+                                    <span class="route-time-val" id="stationTravelTime">18 min</span>
+                                </div>
+                            </div>
+                            <div class="route-actions-group">
+                                <button type="button" class="btn-get-directions" id="btnGetStationDirections" onclick="handleStationDirections()">
+                                    <i data-lucide="navigation" style="width:16px;height:16px;"></i>
+                                    <span>Get Directions</span>
+                                </button>
+                                <button type="button" class="btn-report-problem-trigger" id="btnOpenProblemModal" onclick="openReportProblemModal()">
+                                    <i data-lucide="alert-triangle" style="width:16px;height:16px;"></i>
+                                    <span>Report a Problem</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+<!-- =================================================
+     NEARBY PLACES
+================================================== -->
+
+<div
+    class="card nearby-card"
+    id="nearbyPlacesCard"
+>
+
+    <div class="nearby-header">
+
+        <div class="nearby-title-row">
+
+            <div class="nearby-title">
+
+                <div class="nearby-title-icon">
+                    <i
+                        data-lucide="map-pinned"
+                        size="19"
+                    ></i>
+                </div>
+
+                <div>
+
+                    <h2>
+                        Nearby Places
+                    </h2>
+
+                    <p>
+                        Explore useful places while your EV charges.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <span
+                class="nearby-count"
+                id="nearbyPlacesCount"
+            >
+                Finding...
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- CATEGORY FILTERS -->
+
+    <div class="nearby-filters">
+
+        <button
+            type="button"
+            class="nearby-filter active"
+            data-nearby-category="all"
+            onclick="loadNearbyPlaces('all', this)"
+        >
+            <i
+                data-lucide="compass"
+                size="13"
+            ></i>
+            All
+        </button>
+
+
+        <button
+            type="button"
+            class="nearby-filter"
+            data-nearby-category="cafe"
+            onclick="loadNearbyPlaces('cafe', this)"
+        >
+            <i
+                data-lucide="coffee"
+                size="13"
+            ></i>
+            Cafes
+        </button>
+
+
+        <button
+            type="button"
+            class="nearby-filter"
+            data-nearby-category="restaurant"
+            onclick="loadNearbyPlaces('restaurant', this)"
+        >
+            <i
+                data-lucide="utensils"
+                size="13"
+            ></i>
+            Restaurants
+        </button>
+
+
+        <button
+            type="button"
+            class="nearby-filter"
+            data-nearby-category="hotel"
+            onclick="loadNearbyPlaces('hotel', this)"
+        >
+            <i
+                data-lucide="bed-double"
+                size="13"
+            ></i>
+            Hotels
+        </button>
+
+
+        <button
+            type="button"
+            class="nearby-filter"
+            data-nearby-category="shop"
+            onclick="loadNearbyPlaces('shop', this)"
+        >
+            <i
+                data-lucide="shopping-bag"
+                size="13"
+            ></i>
+            Shopping
+        </button>
+
+
+        <button
+            type="button"
+            class="nearby-filter"
+            data-nearby-category="essentials"
+            onclick="loadNearbyPlaces('essentials', this)"
+        >
+            <i
+                data-lucide="heart-pulse"
+                size="13"
+            ></i>
+            Essentials
+        </button>
+
+    </div>
+
+
+    <!-- PLACES -->
+
+    <div
+        class="nearby-list"
+        id="nearbyPlacesList"
+    >
+
+        <div class="nearby-loading">
+
+            <div class="nearby-spinner"></div>
+
+            <strong>
+                Finding nearby places
+            </strong>
+
+            <span>
+                Searching around this charging station...
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+                <!-- =================================================
+                     SESSION DETAILS
+                ================================================== -->
+
+                <div
+                    class="card"
+                    style="margin-top:24px;"
+                >
+
+                    <div class="card-header">
+
+                        <h2>
+                            Session Details
+                        </h2>
+
+                        <p>
+                            Choose how and when you want to charge.
+                        </p>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- VEHICLE -->
+
+                        <div class="form-group">
+
+                            <label for="vehicleSelect">
+                                Select Vehicle
+                            </label>
+
+                            <select
+                                id="vehicleSelect"
+                                class="select"
+                            >
+
+                                <option value="">
+                                    Select your vehicle
+                                </option>
+
+                            </select>
+
+                            <div
+                                id="vehicleHelp"
+                                class="vehicle-help"
+                                style="display:none;"
+                            >
+
+                                <span>
+                                    No vehicle registered yet.
+                                </span>
+
+                                <a href="vehicles.html">
+                                    Add Vehicle
+                                </a>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CHARGER -->
+
+                        <div class="form-group">
+
+                            <label>
+                                Select Charger
+                            </label>
+
+                            <div
+                                id="chargerList"
+                                class="charger-list"
+                            >
+
+                                <div class="loading">
+                                    Loading chargers...
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- DATE -->
+
+                        <div class="form-group">
+
+                            <label for="bookingDate">
+                                Charging Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="bookingDate"
+                                class="input"
+                            >
+
+                        </div>
+
+
+                        <!-- TIME -->
+
+                        <div class="two-columns">
+
+                            <div class="form-group">
+
+                                <label for="startTime">
+                                    Start Time
+                                </label>
+
+                                <input
+                                    type="time"
+                                    id="startTime"
+                                    class="input"
+                                >
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <label for="endTime">
+                                    End Time
+                                </label>
+
+                                <input
+                                    type="time"
+                                    id="endTime"
+                                    class="input"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+                <!-- =================================================
+                     CHARGING COST CALCULATOR
+                ================================================== -->
+                <div class="card calculator-card">
+                    <div class="calculator-header">
+                        <div class="calculator-title-row">
+                            <div class="calculator-title">
+                                <div class="calculator-title-icon">
+                                    <i data-lucide="calculator" size="19"></i>
+                                </div>
+                                <div>
+                                    <h2>Charging Cost Calculator</h2>
+                                    <p>Estimate energy, cost and charging time before booking.</p>
+                                </div>
+                            </div>
+                            <span class="calculator-badge">Before booking</span>
+                        </div>
+                    </div>
+
+                    <div class="calculator-body">
+                        <div class="calculator-input-grid">
+                            <div class="calculator-input-box">
+                                <label for="calculatorBatteryCapacity">Battery Capacity</label>
+                                <input type="number" id="calculatorBatteryCapacity" min="1" step="0.1" value="40.5">
+                                <div class="calculator-input-unit">kWh</div>
+                            </div>
+
+                            <div class="calculator-input-box">
+                                <label for="calculatorCurrentBattery">Current Battery</label>
+                                <input type="number" id="calculatorCurrentBattery" min="0" max="100" step="1" value="25">
+                                <div class="calculator-input-unit">%</div>
+                            </div>
+
+                            <div class="calculator-input-box">
+                                <label for="calculatorTargetBattery">Target Battery</label>
+                                <input type="number" id="calculatorTargetBattery" min="0" max="100" step="1" value="80">
+                                <div class="calculator-input-unit">%</div>
+                            </div>
+                        </div>
+
+                        <div class="calculator-results">
+                            <div class="calculator-result">
+                                <span>Energy Required</span>
+                                <strong id="calculatorEnergyRequired">22.3 kWh</strong>
+                            </div>
+                            <div class="calculator-result">
+                                <span>Charging Rate</span>
+                                <strong id="calculatorRate">₹15/kWh</strong>
+                            </div>
+                            <div class="calculator-result highlight">
+                                <span>Estimated Cost</span>
+                                <strong id="calculatorEstimatedCost">₹334.13</strong>
+                            </div>
+                            <div class="calculator-result highlight">
+                                <span>Estimated Time</span>
+                                <strong id="calculatorEstimatedTime">52 min</strong>
+                            </div>
+                        </div>
+
+                        <div id="calculatorInvalid" class="calculator-invalid">
+                            Enter a valid battery capacity and make sure the target battery is greater than the current battery.
+                        </div>
+
+                        <div class="calculator-note">
+                            <i data-lucide="info" size="13"></i>
+                            <span>
+                                Time uses the selected charger's real power (kW). Cost uses the charger's ₹/kWh rate when the API provides it; otherwise ₹15/kWh is used. The existing booking payment remains based on the charger's hourly booking rate.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- =================================================
+                 RIGHT SUMMARY
+            ================================================== -->
+
+            <aside class="card summary-card">
+
+                <div class="card-header">
+
+                    <h2>
+                        Booking Summary
+                    </h2>
+
+                    <p>
+                        Review your charging session.
+                    </p>
+
+                </div>
+
+                <div class="summary-body">
+
+                    <div class="summary-row">
+
+                        <span>
+                            Station
+                        </span>
+
+                        <strong id="summaryStation">
+                            —
+                        </strong>
+
+                    </div>
+
+                    <div class="summary-row">
+
+                        <span>
+                            Vehicle
+                        </span>
+
+                        <strong id="summaryVehicle">
+                            —
+                        </strong>
+
+                    </div>
+
+                    <div class="summary-row">
+
+                        <span>
+                            Charger
+                        </span>
+
+                        <strong id="summaryCharger">
+                            —
+                        </strong>
+
+                    </div>
+
+                    <div class="summary-row">
+
+                        <span>
+                            Date
+                        </span>
+
+                        <strong id="summaryDate">
+                            —
+                        </strong>
+
+                    </div>
+
+                    <div class="summary-row">
+
+                        <span>
+                            Time
+                        </span>
+
+                        <strong id="summaryTime">
+                            —
+                        </strong>
+
+                    </div>
+
+                    <div class="summary-row">
+
+                        <span>
+                            Duration
+                        </span>
+
+                        <strong id="summaryDuration">
+                            —
+                        </strong>
+
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-row">
+
+                        <span>
+                            Rate
+                        </span>
+
+                        <strong id="summaryRate">
+                            ₹0/hr
+                        </strong>
+
+                    </div>
+
+                    <div class="total-row">
+
+                        <span>
+                            Total Amount
+                        </span>
+
+                        <strong id="totalAmount">
+                            ₹0
+                        </strong>
+
+                    </div>
+
+                    <button
+                        id="bookButton"
+                        class="book-btn"
+                        onclick="createBooking()"
+                    >
+
+                        <i
+                            data-lucide="calendar-check"
+                            size="18"
+                        ></i>
+
+                        Confirm Booking
+
+                    </button>
+
+                    <div class="secure-note">
+
+                        <i
+                            data-lucide="shield-check"
+                            size="14"
+                        ></i>
+
+                        Secure booking & payment
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </main>
+
+    <!-- =====================================================
+         FEATURE 18: REPORT A PROBLEM MODAL
+    ===================================================== -->
+    <div class="report-modal-overlay" id="reportProblemModal" style="display: none;" onclick="handleReportBackdropClick(event)">
+        <div class="report-modal-box" onclick="event.stopPropagation()">
+            <div class="report-modal-header">
+                <h3>
+                    <i data-lucide="alert-triangle" style="width:20px;height:20px;color:#f87171;"></i>
+                    Report a Problem
+                </h3>
+                <p>Submit issues regarding this charging station to our maintenance team.</p>
+                <button type="button" class="report-modal-close" onclick="closeReportProblemModal()" aria-label="Close modal">&times;</button>
+            </div>
+
+            <div class="report-modal-body">
+                <form id="reportProblemForm" onsubmit="submitReportProblem(event)">
+                    <!-- Station -->
+                    <div class="report-field">
+                        <label class="report-label">Station:</label>
+                        <div class="report-static-val" id="reportStationName">Shastri Nagar</div>
+                    </div>
+
+                    <!-- Charger -->
+                    <div class="report-field">
+                        <label class="report-label" for="reportChargerSelect">Charger:</label>
+                        <select id="reportChargerSelect" class="report-input-select">
+                            <option value="CH-02" selected>CH-02</option>
+                            <option value="CH-01">CH-01</option>
+                            <option value="CH-03">CH-03</option>
+                            <option value="CH-04">CH-04</option>
+                            <option value="General">Station General / Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Problem -->
+                    <div class="report-field">
+                        <label class="report-label">Problem:</label>
+                        <div class="report-radio-options" id="reportProblemOptions">
+                            <label class="problem-radio-item" onclick="selectProblemRadio(this)">
+                                <input type="radio" name="problemType" value="Charger not working">
+                                <span>○ Charger not working</span>
+                            </label>
+                            <label class="problem-radio-item" onclick="selectProblemRadio(this)">
+                                <input type="radio" name="problemType" value="Payment issue">
+                                <span>○ Payment issue</span>
+                            </label>
+                            <label class="problem-radio-item selected" onclick="selectProblemRadio(this)">
+                                <input type="radio" name="problemType" value="Slow charging" checked>
+                                <span>○ Slow charging</span>
+                            </label>
+                            <label class="problem-radio-item" onclick="selectProblemRadio(this)">
+                                <input type="radio" name="problemType" value="Connector problem">
+                                <span>○ Connector problem</span>
+                            </label>
+                            <label class="problem-radio-item" onclick="selectProblemRadio(this)">
+                                <input type="radio" name="problemType" value="Other">
+                                <span>○ Other</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="report-field">
+                        <label class="report-label" for="reportDescription">Description:</label>
+                        <textarea id="reportDescription" class="report-textarea-field" placeholder="[.........................]" rows="3"></textarea>
+                    </div>
+
+                    <div class="report-modal-footer">
+                        <button type="button" class="report-btn-secondary" onclick="closeReportProblemModal()">Cancel</button>
+                        <button type="submit" class="report-btn-submit" id="submitReportBtn">
+                            Submit Report
+                        </button>
+                    </div>
+                </form>
+
+                <div id="reportSuccessAlert" class="report-toast-alert" style="display: none;">
+                    <i data-lucide="check-circle" style="width:22px;height:22px;color:#16a34a;flex-shrink:0;"></i>
+                    <div>
+                        <div><strong>Report Submitted! Ticket: <span id="reportSuccessTicketId">#1025</span></strong></div>
+                        <div style="font-size:12px;color:#15803d;margin-top:2px;">Our station technician has been notified and dispatched.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ===================================================== -->
+
+    <script src="../js/favorites.js"></script>
+
+
+    <script>
+
+        /* =====================================================
+           CONFIG
+        ===================================================== */
+
+        const API_BASE_URL =
+            "http://localhost:5000/api";
+
+
+        /* =====================================================
+           AUTH
+        ===================================================== */
+
+        const token =
+            localStorage.getItem("ev_token");
+
+        let user = null;
+
+        try {
+
+            user = JSON.parse(
+                localStorage.getItem("ev_user") ||
+                "null"
+            );
+
+        } catch (error) {
+
+            user = null;
+
+        }
+
+
+        if (!token || !user) {
+
+            window.location.href =
+                "login.html";
+
+        }
+
+
+        /* =====================================================
+           AUTH HEADERS
+        ===================================================== */
+
+        function authHeaders() {
+
+            return {
+
+                "Content-Type":
+                    "application/json",
+
+                "Authorization":
+                    `Bearer ${token}`
+
+            };
+
+        }
+
+
+        /* =====================================================
+           API REQUEST
+        ===================================================== */
+
+        async function apiRequest(
+            endpoint,
+            options = {}
+        ) {
+
+            const response =
+                await fetch(
+                    API_BASE_URL + endpoint,
+                    {
+
+                        ...options,
+
+                        headers: {
+
+                            ...authHeaders(),
+
+                            ...(options.headers || {})
+
+                        }
+
+                    }
+                );
+
+
+            let data = {};
+
+            try {
+
+                data =
+                    await response.json();
+
+            } catch (error) {
+
+                data = {};
+
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.message ||
+                    data.error ||
+                    `Request failed (${response.status})`
+                );
+
+            }
+
+
+            return data;
+
+        }
+
+
+        /* =====================================================
+           ALERTS
+        ===================================================== */
+
+        function showError(message) {
+
+            const box =
+                document.getElementById(
+                    "errorAlert"
+                );
+
+            document.getElementById(
+                "errorMessage"
+            ).textContent = message;
+
+            box.classList.add("show");
+
+            document.getElementById(
+                "successAlert"
+            ).classList.remove("show");
+
+            lucide.createIcons();
+
+        }
+
+
+        function showSuccess(message) {
+
+            const box =
+                document.getElementById(
+                    "successAlert"
+                );
+
+            document.getElementById(
+                "successMessage"
+            ).textContent = message;
+
+            box.classList.add("show");
+
+            document.getElementById(
+                "errorAlert"
+            ).classList.remove("show");
+
+            lucide.createIcons();
+
+        }
+
+
+        function hideAlerts() {
+
+            document.getElementById(
+                "errorAlert"
+            ).classList.remove("show");
+
+            document.getElementById(
+                "successAlert"
+            ).classList.remove("show");
+
+        }
+
+
+        /* =====================================================
+           LOGOUT
+        ===================================================== */
+
+        function logout() {
+
+            localStorage.removeItem(
+                "ev_token"
+            );
+
+            localStorage.removeItem(
+                "ev_user"
+            );
+
+            window.location.href =
+                "login.html";
+
+        }
+
+
+        /* =====================================================
+           URL PARAMETERS
+        ===================================================== */
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const stationId =
+            params.get("station_id");
+
+
+        if (!stationId) {
+
+            document.getElementById(
+                "loadingState"
+            ).style.display = "none";
+
+            showError(
+                "No charging station was selected."
+            );
+
+        }
+
+
+        /* =====================================================
+           STATE
+        ===================================================== */
+
+        let station = null;
+
+        let vehicles = [];
+
+        let chargers = [];
+
+        let selectedCharger = null;
+
+
+        /* =====================================================
+           DATE
+        ===================================================== */
+
+        function getLocalDate() {
+
+            const date =
+                new Date();
+
+            const year =
+                date.getFullYear();
+
+            const month =
+                String(
+                    date.getMonth() + 1
+                ).padStart(2, "0");
+
+            const day =
+                String(
+                    date.getDate()
+                ).padStart(2, "0");
+
+            return `${year}-${month}-${day}`;
+
+        }
+
+
+        const bookingDateInput =
+            document.getElementById(
+                "bookingDate"
+            );
+
+
+        bookingDateInput.min =
+            getLocalDate();
+
+        bookingDateInput.value =
+            getLocalDate();
+
+
+        /* =====================================================
+           LOAD STATION
+        ===================================================== */
+
+        async function loadStation() {
+
+            try {
+
+                hideAlerts();
+
+                console.log(
+                    "Loading station:",
+                    stationId
+                );
+
+
+                const result =
+                    await apiRequest(
+                        `/stations/${encodeURIComponent(stationId)}`
+                    );
+
+
+                console.log(
+                    "Station API response:",
+                    result
+                );
+
+
+                station =
+                    result.data ||
+                    result.station ||
+                    result;
+
+
+                if (!station) {
+
+                    throw new Error(
+                        "Charging station not found."
+                    );
+
+                }
+
+
+                renderStation();
+
+
+                /* =================================================
+                   GET CHARGERS
+                ================================================= */
+
+                chargers =
+                    station.chargers ||
+                    station.data?.chargers ||
+                    station.slots ||
+                    station.data?.slots ||
+                    [];
+
+
+                if (!Array.isArray(chargers)) {
+
+                    chargers = [];
+
+                }
+
+
+                console.log(
+                    "Chargers received:",
+                    chargers
+                );
+
+
+                renderChargers();
+
+
+                /* =================================================
+                   SHOW CONTENT
+                ================================================= */
+
+                document.getElementById(
+                    "loadingState"
+                ).style.display = "none";
+
+
+                document.getElementById(
+                    "bookingContent"
+                ).style.display = "grid";
+
+
+                /* =================================================
+                   LOAD VEHICLES
+                ================================================= */
+
+                await loadVehicles();
+
+updateSummary();
+
+/* =================================================
+   LOAD NEARBY PLACES
+================================================= */
+
+await loadNearbyPlaces("all");
+
+lucide.createIcons();
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to load station:",
+                    error
+                );
+
+
+                document.getElementById(
+                    "loadingState"
+                ).style.display = "none";
+
+
+                document.getElementById(
+                    "bookingContent"
+                ).style.display = "none";
+
+
+                showError(
+                    error.message ||
+                    "Unable to load charging station."
+                );
+
+            }
+
+        }
+
+
+        /* =====================================================
+           RENDER STATION
+        ===================================================== */
+
+        function renderStation() {
+
+            const name =
+                station.name ||
+                station.station_name ||
+                "Charging Station";
+
+
+            const address =
+                station.address ||
+                station.location ||
+                (
+                    station.city
+                        ? `${station.city}, ${station.state || ""}`
+                        : "Address unavailable"
+                );
+
+
+            document.getElementById(
+                "stationName"
+            ).textContent = name;
+
+
+            document.getElementById(
+                "stationAddress"
+            ).textContent = address;
+
+
+            document.getElementById(
+                "stationOperator"
+            ).textContent =
+                station.operator_name ||
+                station.operator ||
+                "EV Charge Hub";
+
+
+            const rating =
+                Number(station.rating);
+
+
+            document.getElementById(
+                "stationRating"
+            ).textContent =
+                Number.isFinite(rating) &&
+                rating > 0
+                    ? `${rating.toFixed(1)} ★`
+                    : "Not rated";
+
+
+            document.getElementById(
+                "stationStatus"
+            ).textContent =
+                station.status ||
+                "Active";
+
+
+            document.getElementById(
+                "summaryStation"
+            ).textContent =
+                name;
+
+            // Feature 19: Route distance & travel time
+            const distEl = document.getElementById("stationRouteDistance");
+            const timeEl = document.getElementById("stationTravelTime");
+            if (distEl) {
+                distEl.textContent = (station.distance ? `${Number(station.distance).toFixed(1)} km away` : "2.4 km away");
+            }
+            if (timeEl) {
+                if (station.distance) {
+                    const mins = Math.max(5, Math.round(Number(station.distance) / 25 * 60));
+                    timeEl.textContent = `${mins} min`;
+                } else {
+                    timeEl.textContent = "18 min";
+                }
+            }
+
+            // Feature 18: Prefill station name in Report Problem modal
+            const repStationEl = document.getElementById("reportStationName");
+            if (repStationEl) {
+                repStationEl.textContent = name;
+            }
+
+            updateBookingStationFavoriteUI();
+
+        }
+
+        /* =====================================================
+           FEATURE 19: STATION ROUTE & NAVIGATION
+        ===================================================== */
+        function handleStationDirections() {
+            if (!station) return;
+            let destination = "";
+            if (station.latitude && station.longitude) {
+                destination = `${station.latitude},${station.longitude}`;
+            } else if (station.address) {
+                destination = station.address;
+            } else {
+                destination = station.name || "Shastri Nagar";
+            }
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
+
+        /* =====================================================
+           FEATURE 18: REPORT A PROBLEM (USER SIDE)
+        ===================================================== */
+        function openReportProblemModal() {
+            const modal = document.getElementById("reportProblemModal");
+            if (!modal) return;
+
+            const repStationEl = document.getElementById("reportStationName");
+            if (repStationEl && station) {
+                repStationEl.textContent = station.name || station.station_name || "Shastri Nagar";
+            }
+
+            // Sync chargers into select if available
+            const chargerSelect = document.getElementById("reportChargerSelect");
+            if (chargerSelect && chargers && chargers.length > 0) {
+                const currentVal = selectedCharger ? (selectedCharger.charger_number || selectedCharger.identifier || `CH-0${selectedCharger.id}`) : "CH-02";
+                chargerSelect.innerHTML = chargers.map(c => {
+                    const num = c.charger_number || c.identifier || `CH-0${c.id}`;
+                    return `<option value="${num}" ${num === currentVal ? 'selected' : ''}>${num}</option>`;
+                }).join('') + `<option value="General">Station General / Other</option>`;
+            }
+
+            const successAlert = document.getElementById("reportSuccessAlert");
+            if (successAlert) successAlert.style.display = "none";
+            const form = document.getElementById("reportProblemForm");
+            if (form) {
+                form.style.display = "block";
+                const descInput = document.getElementById("reportDescription");
+                if (descInput) descInput.value = "";
+            }
+            modal.style.display = "flex";
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeReportProblemModal() {
+            const modal = document.getElementById("reportProblemModal");
+            if (modal) modal.style.display = "none";
+        }
+
+        function handleReportBackdropClick(e) {
+            if (e.target.id === "reportProblemModal") {
+                closeReportProblemModal();
+            }
+        }
+
+        function selectProblemRadio(labelElement) {
+            const options = document.querySelectorAll("#reportProblemOptions .problem-radio-item");
+            options.forEach(opt => opt.classList.remove("selected"));
+            labelElement.classList.add("selected");
+            const radio = labelElement.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+        }
+
+        async function submitReportProblem(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById("submitReportBtn");
+            const origBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Submitting...";
+
+            try {
+                const stationName = document.getElementById("reportStationName").textContent || "Shastri Nagar";
+                const charger = document.getElementById("reportChargerSelect").value || "CH-02";
+                const selectedRadio = document.querySelector('input[name="problemType"]:checked');
+                const problemType = selectedRadio ? selectedRadio.value : "Slow charging";
+                const description = document.getElementById("reportDescription").value || "";
+
+                const payload = {
+                    station_id: station ? station.id : 1,
+                    station_name: stationName,
+                    charger_number: charger,
+                    problem_type: problemType,
+                    description: description
+                };
+
+                const res = await fetch(`${API_BASE_URL}/stations/report-problem`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const ticketNum = (data.data && data.data.ticket_number) ? data.data.ticket_number : "#1025";
+                    document.getElementById("reportSuccessTicketId").textContent = ticketNum;
+                    document.getElementById("reportProblemForm").style.display = "none";
+                    document.getElementById("reportSuccessAlert").style.display = "flex";
+                    if (window.lucide) lucide.createIcons();
+                    setTimeout(() => {
+                        closeReportProblemModal();
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = origBtnText;
+                    }, 2800);
+                } else {
+                    alert(data.message || "Failed to submit report. Please try again.");
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origBtnText;
+                }
+            } catch (err) {
+                console.error("submitReportProblem error:", err);
+                alert("Failed to submit report. Please check connection.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origBtnText;
+            }
+        }
+
+
+        /* =====================================================
+           BOOKING FAVORITE STATIONS
+        ===================================================== */
+
+        function updateBookingStationFavoriteUI() {
+            if (!station || !station.id) return;
+            const isFav = isStationFavorite(station.id);
+            const btn = document.getElementById('bookingFavBtn');
+            const symbol = document.getElementById('bookingFavSymbol');
+            if (btn && symbol) {
+                btn.classList.toggle('active', isFav);
+                symbol.textContent = isFav ? '♥' : '♡';
+                btn.title = isFav ? 'Remove from favorites' : 'Add to favorites';
+                btn.setAttribute('aria-label', btn.title);
+            }
+        }
+
+        async function handleToggleBookingStationFavorite(event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            if (!station || !station.id) return;
+            await toggleFavoriteStation(station.id, station);
+            updateBookingStationFavoriteUI();
+        }
+
+        window.addEventListener('favoritesChanged', () => {
+            updateBookingStationFavoriteUI();
+        });
+
+
+        /* =====================================================
+           LOAD VEHICLES
+        ===================================================== */
+
+        async function loadVehicles() {
+
+            const select =
+                document.getElementById(
+                    "vehicleSelect"
+                );
+
+
+            const help =
+                document.getElementById(
+                    "vehicleHelp"
+                );
+
+
+            try {
+
+                console.log(
+                    "Loading vehicles..."
+                );
+
+
+                const result =
+                    await apiRequest(
+                        "/vehicles"
+                    );
+
+
+                console.log(
+                    "Vehicles API response:",
+                    result
+                );
+
+
+                vehicles =
+                    result.data ||
+                    result.vehicles ||
+                    result;
+
+
+                if (!Array.isArray(vehicles)) {
+
+                    vehicles = [];
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "Backend vehicles unavailable:",
+                    error
+                );
+
+
+                /*
+                 * Fallback ONLY for display.
+                 *
+                 * A vehicle still needs a real database ID.
+                 */
+
+                try {
+
+                    const localVehicles =
+                        JSON.parse(
+                            localStorage.getItem(
+                                "ev_vehicles"
+                            ) || "[]"
+                        );
+
+
+                    vehicles =
+                        Array.isArray(
+                            localVehicles
+                        )
+                            ? localVehicles
+                            : [];
+
+                } catch (storageError) {
+
+                    vehicles = [];
+
+                }
+
+            }
+
+
+            select.innerHTML = `
+                <option value="">
+                    Select your vehicle
+                </option>
+            `;
+
+
+            let validVehicleCount = 0;
+
+
+            vehicles.forEach(
+                vehicle => {
+
+                    const id =
+                        vehicle.id ??
+                        vehicle.vehicle_id;
+
+
+                    /*
+                     * IMPORTANT:
+                     * Only real DB IDs are allowed.
+                     */
+
+                    if (
+                        id === undefined ||
+                        id === null ||
+                        id === ""
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const name =
+                        vehicle.vehicle_name ||
+                        vehicle.name ||
+                        vehicle.vehicle_model ||
+                        vehicle.model ||
+                        "Electric Vehicle";
+
+
+                    const number =
+                        vehicle.vehicle_number ||
+                        vehicle.registration_number ||
+                        vehicle.regNumber ||
+                        "";
+
+
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+
+
+                    option.value =
+                        String(id);
+
+
+                    option.textContent =
+                        number
+                            ? `${name} • ${number}`
+                            : name;
+
+
+                    select.appendChild(
+                        option
+                    );
+
+
+                    validVehicleCount++;
+
+                }
+            );
+
+
+            if (
+                validVehicleCount === 0
+            ) {
+
+                help.style.display =
+                    "flex";
+
+                select.disabled =
+                    true;
+
+            } else {
+
+                help.style.display =
+                    "none";
+
+                select.disabled =
+                    false;
+
+            }
+
+
+            select.onchange = () => {
+                const capacityInput =
+                    document.getElementById("calculatorBatteryCapacity");
+
+                if (capacityInput) {
+                    delete capacityInput.dataset.userEdited;
+                }
+
+                updateSummary();
+            };
+
+        }
+
+
+        /* =====================================================
+           RENDER CHARGERS
+        ===================================================== */
+
+        function renderChargers() {
+
+            const container =
+                document.getElementById(
+                    "chargerList"
+                );
+
+
+            container.innerHTML = "";
+
+
+            if (!chargers.length) {
+
+                container.innerHTML = `
+                    <div class="empty">
+
+                        <div class="empty-icon">
+                            <i data-lucide="plug-zap"></i>
+                        </div>
+
+                        <strong>
+                            No chargers available
+                        </strong>
+
+                        <p style="margin-top:5px;font-size:12px;">
+                            This station currently has no charger
+                            information available.
+                        </p>
+
+                    </div>
+                `;
+
+                lucide.createIcons();
+
+                return;
+
+            }
+
+
+            /*
+             * Do not show chargers that are:
+             * Maintenance
+             * Offline
+             * Occupied
+             */
+
+            const availableChargers =
+                chargers.filter(
+                    charger => {
+
+                        const status =
+                            String(
+                                charger.status ||
+                                "Available"
+                            ).toLowerCase();
+
+
+                        return ![
+                            "maintenance",
+                            "offline",
+                            "occupied"
+                        ].includes(status);
+
+                    }
+                );
+
+
+            if (!availableChargers.length) {
+
+                container.innerHTML = `
+                    <div class="empty">
+
+                        <div class="empty-icon">
+                            <i data-lucide="battery-warning"></i>
+                        </div>
+
+                        <strong>
+                            No chargers currently available
+                        </strong>
+
+                        <p style="margin-top:5px;font-size:12px;">
+                            All chargers at this station are
+                            currently unavailable.
+                        </p>
+
+                    </div>
+                `;
+
+                lucide.createIcons();
+
+                return;
+
+            }
+
+
+            availableChargers.forEach(
+                (charger, index) => {
+
+                    /*
+                     * REAL DATABASE CHARGER ID
+                     */
+
+                    const id =
+                        charger.id ??
+                        charger.charger_id;
+
+
+                    if (
+                        id === undefined ||
+                        id === null
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const number =
+                        charger.charger_number ||
+                        charger.charger_name ||
+                        charger.slot_name ||
+                        `Charger ${index + 1}`;
+
+
+                    const type =
+                        charger.charger_type ||
+                        "EV Charger";
+
+
+                    const connector =
+                        charger.connector_type ||
+                        "";
+
+
+                    let power =
+                        charger.power_kw ??
+                        charger.power ??
+                        charger.charging_speed ??
+                        "";
+
+
+                    let powerText =
+                        String(power);
+
+
+                    if (
+                        powerText &&
+                        !powerText
+                            .toLowerCase()
+                            .includes("kw")
+                    ) {
+
+                        powerText += " kW";
+
+                    }
+
+
+                    const price =
+                        Number(
+                            charger.price_per_hour ??
+                            charger.price ??
+                            charger.rate ??
+                            0
+                        );
+
+
+                    const status =
+                        String(
+                            charger.status ||
+                            "Available"
+                        );
+
+
+                    const div =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    div.className =
+                        "charger-option";
+
+
+                    div.innerHTML = `
+
+                        <input
+                            type="radio"
+                            name="charger"
+                            id="charger_${escapeHtml(String(id))}"
+                            value="${escapeHtml(String(id))}"
+                        >
+
+                        <label
+                            for="charger_${escapeHtml(String(id))}"
+                        >
+
+                            <div class="charger-left">
+
+                                <div class="charger-icon">
+
+                                    <i
+                                        data-lucide="plug-zap"
+                                    ></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="charger-name">
+                                        ${escapeHtml(number)}
+                                    </div>
+
+                                    <div class="charger-meta">
+
+                                        ${escapeHtml(type)}
+
+                                        ${
+                                            connector
+                                                ? " • " +
+                                                  escapeHtml(connector)
+                                                : ""
+                                        }
+
+                                        ${
+                                            powerText
+                                                ? " • " +
+                                                  escapeHtml(powerText)
+                                                : ""
+                                        }
+
+                                    </div>
+
+                                    <div class="status-pill">
+
+                                        <i
+                                            data-lucide="circle-check"
+                                            size="11"
+                                        ></i>
+
+                                        ${escapeHtml(status)}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="charger-price">
+                                ₹${price.toFixed(2)}/hr
+                            </div>
+
+                        </label>
+
+                    `;
+
+
+                    container.appendChild(
+                        div
+                    );
+
+
+                    const radio =
+                        div.querySelector(
+                            "input"
+                        );
+
+
+                    radio.addEventListener(
+                        "change",
+                        () => {
+
+                            selectedCharger =
+                                availableChargers.find(
+                                    charger => {
+
+                                        const chargerId =
+                                            charger.id ??
+                                            charger.charger_id;
+
+                                        return String(
+                                            chargerId
+                                        ) ===
+                                        String(id);
+
+                                    }
+                                );
+
+
+                            updateSummary();
+
+                        }
+                    );
+
+                }
+            );
+
+
+            /*
+             * Automatically select first charger.
+             */
+
+            const first =
+                container.querySelector(
+                    'input[type="radio"]'
+                );
+
+
+            if (first) {
+
+                first.checked =
+                    true;
+
+                first.dispatchEvent(
+                    new Event("change")
+                );
+
+            }
+
+
+            lucide.createIcons();
+
+        }
+
+
+        /* =====================================================
+           UPDATE SUMMARY
+        ===================================================== */
+
+        function updateSummary() {
+
+            const vehicleId = document.getElementById("vehicleSelect").value;
+
+            const vehicle = vehicles.find(v => {
+                const id = v.id ?? v.vehicle_id;
+                return String(id) === String(vehicleId);
+            });
+
+            const date = document.getElementById("bookingDate").value;
+            const start = document.getElementById("startTime").value;
+            const end = document.getElementById("endTime").value;
+
+            document.getElementById("summaryVehicle").textContent =
+                vehicle
+                    ? (vehicle.vehicle_name || vehicle.name || vehicle.vehicle_model || vehicle.model || "Vehicle")
+                    : "—";
+
+            document.getElementById("summaryCharger").textContent =
+                selectedCharger
+                    ? (selectedCharger.charger_number || selectedCharger.charger_name || selectedCharger.slot_name || "Selected Charger")
+                    : "—";
+
+            document.getElementById("summaryDate").textContent =
+                date ? formatDate(date) : "—";
+
+            document.getElementById("summaryTime").textContent =
+                start && end ? `${formatTime(start)} – ${formatTime(end)}` : "—";
+
+            const duration = calculateDuration(start, end);
+
+            document.getElementById("summaryDuration").textContent =
+                duration > 0 ? formatDuration(duration) : "—";
+
+            /* Existing booking/payment calculation: hourly rate. */
+            const hourlyPrice = selectedCharger
+                ? Number(
+                    selectedCharger.price_per_hour ??
+                    selectedCharger.price ??
+                    selectedCharger.rate ??
+                    0
+                )
+                : 0;
+
+            document.getElementById("summaryRate").textContent =
+                `₹${hourlyPrice.toFixed(2)}/hr`;
+
+            const total = duration > 0 ? duration * hourlyPrice : 0;
+
+            document.getElementById("totalAmount").textContent =
+                `₹${total.toFixed(2)}`;
+
+            updateChargingCostCalculator(vehicle);
+        }
+
+
+        /* =====================================================
+           CHARGING COST CALCULATOR
+        ===================================================== */
+
+        function numericValue(value, fallback = 0) {
+            const n = Number(value);
+            return Number.isFinite(n) ? n : fallback;
+        }
+
+        function selectedVehicleForCalculator() {
+            const id = document.getElementById("vehicleSelect")?.value;
+
+            return vehicles.find(v => {
+                const vehicleId = v.id ?? v.vehicle_id;
+                return String(vehicleId) === String(id);
+            }) || null;
+        }
+
+        function getBatteryCapacity(vehicle) {
+            if (vehicle) {
+                const value = numericValue(
+                    vehicle.battery_capacity ??
+                    vehicle.batteryCapacity ??
+                    vehicle.battery_capacity_kwh ??
+                    vehicle.batteryCapacityKwh,
+                    0
+                );
+
+                if (value > 0) return value;
+            }
+
+            return 40.5;
+        }
+
+        function getChargerPowerKw() {
+            if (!selectedCharger) return 25.7;
+
+            const raw =
+                selectedCharger.power_kw ??
+                selectedCharger.power ??
+                selectedCharger.charging_power_kw ??
+                selectedCharger.charging_speed;
+
+            if (typeof raw === "string") {
+                const match = raw.replace(",", ".").match(/[\d.]+/);
+                if (match) {
+                    const n = Number(match[0]);
+                    if (Number.isFinite(n) && n > 0) return n;
+                }
+            }
+
+            const n = Number(raw);
+            return Number.isFinite(n) && n > 0 ? n : 25.7;
+        }
+
+        function getRatePerKwh() {
+            if (selectedCharger) {
+                const raw =
+                    selectedCharger.price_per_kwh ??
+                    selectedCharger.pricePerKwh ??
+                    selectedCharger.charging_rate_per_kwh ??
+                    selectedCharger.rate_per_kwh ??
+                    selectedCharger.energy_price;
+
+                const n = Number(raw);
+
+                if (Number.isFinite(n) && n >= 0) return n;
+            }
+
+            /* Requested example/default: ₹15 per kWh. */
+            return 15;
+        }
+
+        function updateChargingCostCalculator(vehicle = selectedVehicleForCalculator()) {
+
+            const capacityInput = document.getElementById("calculatorBatteryCapacity");
+            const currentInput = document.getElementById("calculatorCurrentBattery");
+            const targetInput = document.getElementById("calculatorTargetBattery");
+            const invalidBox = document.getElementById("calculatorInvalid");
+
+            if (!capacityInput || !currentInput || !targetInput) return;
+
+            /*
+             * Auto-fill battery capacity from the selected vehicle only if
+             * the user has not manually edited the calculator capacity.
+             */
+            if (vehicle && !capacityInput.dataset.userEdited) {
+                const capacity = getBatteryCapacity(vehicle);
+                capacityInput.value = String(capacity);
+            }
+
+            const batteryCapacity = numericValue(capacityInput.value);
+            const currentBattery = numericValue(currentInput.value);
+            const targetBattery = numericValue(targetInput.value);
+
+            const invalid =
+                batteryCapacity <= 0 ||
+                currentBattery < 0 ||
+                currentBattery > 100 ||
+                targetBattery < 0 ||
+                targetBattery > 100 ||
+                targetBattery <= currentBattery;
+
+            if (invalid) {
+                invalidBox?.classList.add("show");
+                setCalculatorValue("calculatorEnergyRequired", "—");
+                setCalculatorValue("calculatorRate", "—");
+                setCalculatorValue("calculatorEstimatedCost", "—");
+                setCalculatorValue("calculatorEstimatedTime", "—");
+                return;
+            }
+
+            invalidBox?.classList.remove("show");
+
+            /* Example: 40.5 × (80 - 25) / 100 = 22.275 kWh. */
+            const energyRequired =
+                batteryCapacity * ((targetBattery - currentBattery) / 100);
+
+            const ratePerKwh = getRatePerKwh();
+            const powerKw = getChargerPowerKw();
+
+            /* Example with 25.7 kW: 22.275 / 25.7 × 60 ≈ 52 min. */
+            const estimatedMinutes =
+                powerKw > 0
+                    ? (energyRequired / powerKw) * 60
+                    : 0;
+
+            const estimatedCost =
+                energyRequired * ratePerKwh;
+
+            setCalculatorValue(
+                "calculatorEnergyRequired",
+                `${energyRequired.toFixed(1)} kWh`
+            );
+
+            setCalculatorValue(
+                "calculatorRate",
+                `₹${ratePerKwh.toFixed(2)}/kWh`
+            );
+
+            setCalculatorValue(
+                "calculatorEstimatedCost",
+                `₹${estimatedCost.toFixed(2)}`
+            );
+
+            setCalculatorValue(
+                "calculatorEstimatedTime",
+                formatEstimatedMinutes(estimatedMinutes)
+            );
+        }
+
+        function setCalculatorValue(id, value) {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        }
+
+        function formatEstimatedMinutes(minutes) {
+            if (!Number.isFinite(minutes) || minutes <= 0) return "—";
+
+            const rounded = Math.max(1, Math.round(minutes));
+            const hours = Math.floor(rounded / 60);
+            const mins = rounded % 60;
+
+            if (hours > 0 && mins > 0) return `${hours} hr ${mins} min`;
+            if (hours > 0) return `${hours} hr`;
+            return `${mins} min`;
+        }
+
+        /* =====================================================
+           DATE / TIME EVENTS
+        ===================================================== */
+
+        document.getElementById(
+            "bookingDate"
+        ).addEventListener(
+            "change",
+            updateSummary
+        );
+
+
+        document.getElementById(
+            "startTime"
+        ).addEventListener(
+            "change",
+            updateSummary
+        );
+
+
+        document.getElementById(
+            "endTime"
+        ).addEventListener(
+            "change",
+            updateSummary
+        );
+
+
+        [
+            "calculatorBatteryCapacity",
+            "calculatorCurrentBattery",
+            "calculatorTargetBattery"
+        ].forEach(id => {
+
+            const input = document.getElementById(id);
+
+            if (!input) return;
+
+            input.addEventListener("input", event => {
+                event.target.dataset.userEdited = "true";
+                updateChargingCostCalculator();
+            });
+
+            input.addEventListener("change", updateChargingCostCalculator);
+        });
+
+
+        /* =====================================================
+           CREATE BOOKING
+        ===================================================== */
+
+        async function createBooking() {
+
+            hideAlerts();
+
+
+            const vehicleId =
+                document.getElementById(
+                    "vehicleSelect"
+                ).value;
+
+
+            const bookingDate =
+                document.getElementById(
+                    "bookingDate"
+                ).value;
+
+
+            const startTime =
+                document.getElementById(
+                    "startTime"
+                ).value;
+
+
+            const endTime =
+                document.getElementById(
+                    "endTime"
+                ).value;
+
+
+            /* =================================================
+               VEHICLE VALIDATION
+            ================================================= */
+
+            if (!vehicleId) {
+
+                showError(
+                    "Please select a vehicle before booking."
+                );
+
+                return;
+
+            }
+
+
+            const selectedVehicle =
+                vehicles.find(
+                    vehicle => {
+
+                        const id =
+                            vehicle.id ??
+                            vehicle.vehicle_id;
+
+                        return String(id) ===
+                            String(vehicleId);
+
+                    }
+                );
+
+
+            if (!selectedVehicle) {
+
+                showError(
+                    "Selected vehicle could not be verified."
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               CHARGER VALIDATION
+            ================================================= */
+
+            if (!selectedCharger) {
+
+                showError(
+                    "Please select a charger."
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               DATE
+            ================================================= */
+
+            if (!bookingDate) {
+
+                showError(
+                    "Please select a charging date."
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               TIME
+            ================================================= */
+
+            if (
+                !startTime ||
+                !endTime
+            ) {
+
+                showError(
+                    "Please select start and end time."
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               DURATION
+            ================================================= */
+
+            const duration =
+                calculateDuration(
+                    startTime,
+                    endTime
+                );
+
+
+            if (duration <= 0) {
+
+                showError(
+                    "End time must be after start time."
+                );
+
+                return;
+
+            }
+
+
+            /*
+             * Minimum 30 minutes.
+             */
+
+            if (duration < 0.5) {
+
+                showError(
+                    "Minimum charging duration is 30 minutes."
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               PAST TIME VALIDATION
+            ================================================= */
+
+            if (
+                bookingDate ===
+                getLocalDate()
+            ) {
+
+                const now =
+                    new Date();
+
+
+                const selected =
+                    new Date(
+                        `${bookingDate}T${startTime}`
+                    );
+
+
+                if (
+                    selected <= now
+                ) {
+
+                    showError(
+                        "Please select a future charging time."
+                    );
+
+                    return;
+
+                }
+
+            }
+
+
+            /* =================================================
+               PRICE
+            ================================================= */
+
+            const price =
+                Number(
+                    selectedCharger.price_per_hour ??
+                    selectedCharger.price ??
+                    selectedCharger.rate ??
+                    0
+                );
+
+
+            if (
+                !Number.isFinite(price) ||
+                price < 0
+            ) {
+
+                showError(
+                    "Invalid charger pricing received from server."
+                );
+
+                return;
+
+            }
+
+
+            const amount =
+                Number(
+                    (
+                        duration *
+                        price
+                    ).toFixed(2)
+                );
+
+
+            if (amount <= 0) {
+
+                showError(
+                    "Booking amount must be greater than ₹0."
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               REAL DATABASE IDs
+            ================================================= */
+
+            const chargerId =
+                selectedCharger.id ??
+                selectedCharger.charger_id;
+
+
+            if (
+                chargerId === undefined ||
+                chargerId === null ||
+                chargerId === ""
+            ) {
+
+                showError(
+                    "Invalid charger ID returned by the server."
+                );
+
+                return;
+
+            }
+
+
+            const numericVehicleId =
+                Number(vehicleId);
+
+
+            const numericStationId =
+                Number(stationId);
+
+
+            const numericChargerId =
+                Number(chargerId);
+
+
+            if (
+                !Number.isInteger(
+                    numericVehicleId
+                ) ||
+                !Number.isInteger(
+                    numericStationId
+                ) ||
+                !Number.isInteger(
+                    numericChargerId
+                )
+            ) {
+
+                showError(
+                    "Invalid database ID. Please refresh and try again."
+                );
+
+                return;
+
+            }
+
+
+            /* =================================================
+               BUTTON
+            ================================================= */
+
+            const button =
+                document.getElementById(
+                    "bookButton"
+                );
+
+
+            const originalButton =
+                button.innerHTML;
+
+
+            button.disabled =
+                true;
+
+
+            button.innerHTML = `
+                <span class="spinner"></span>
+                Creating booking...
+            `;
+
+
+            lucide.createIcons();
+
+
+            try {
+
+                /* =================================================
+                   BOOKING PAYLOAD
+                ================================================= */
+
+                const bookingPayload = {
+
+                    vehicle_id:
+                        numericVehicleId,
+
+                    station_id:
+                        numericStationId,
+
+                    charger_id:
+                        numericChargerId,
+
+                    booking_date:
+                        bookingDate,
+
+                    start_time:
+                        startTime,
+
+                    end_time:
+                        endTime,
+
+                    amount:
+                        amount
+
+                };
+
+
+                console.log(
+                    "Creating database booking:",
+                    bookingPayload
+                );
+
+
+                /* =================================================
+                   CREATE DATABASE BOOKING
+                ================================================= */
+
+                const result =
+                    await apiRequest(
+                        "/bookings",
+                        {
+
+                            method:
+                                "POST",
+
+                            body:
+                                JSON.stringify(
+                                    bookingPayload
+                                )
+
+                        }
+                    );
+
+
+                console.log(
+                    "Booking response:",
+                    result
+                );
+
+
+                /* =================================================
+                   GET REAL DATABASE BOOKING ID
+                =================================================
+
+                   BACKEND RETURNS:
+
+                   {
+                       success: true,
+                       bookingId: 123,
+                       razorpayOrderId: "...",
+                       amount: 1500,
+                       keyId: "..."
+                   }
+
+                   NEVER generate a fake ID.
+                ================================================= */
+
+                const booking =
+                    result.booking ||
+                    result.data ||
+                    result;
+
+
+                console.log(
+                    "Normalized booking response:",
+                    booking
+                );
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * Your backend returns `bookingId`.
+                 *
+                 * Support a few compatibility formats too.
+                 */
+
+                const realBookingId =
+                    result.bookingId ??
+                    result.booking_id ??
+                    result.id ??
+                    booking?.bookingId ??
+                    booking?.booking_id ??
+                    booking?.id ??
+                    result.data?.bookingId ??
+                    result.data?.booking_id ??
+                    result.data?.id;
+
+
+                console.log(
+                    "REAL DATABASE BOOKING ID:",
+                    realBookingId
+                );
+
+
+                if (
+                    realBookingId === undefined ||
+                    realBookingId === null ||
+                    realBookingId === ""
+                ) {
+
+                    throw new Error(
+                        "Booking was created but the server did not return the database booking ID."
+                    );
+
+                }
+
+
+                /*
+                 * Convert to number because our MySQL
+                 * booking IDs are numeric.
+                 */
+
+                const numericBookingId =
+                    Number(realBookingId);
+
+
+                if (
+                    !Number.isInteger(
+                        numericBookingId
+                    ) ||
+                    numericBookingId <= 0
+                ) {
+
+                    throw new Error(
+                        "The server returned an invalid database booking ID."
+                    );
+
+                }
+
+
+                /* =================================================
+                   RAZORPAY RESPONSE
+                =================================================
+
+                   IMPORTANT:
+                   Backend uses camelCase:
+
+                   razorpayOrderId
+                   keyId
+                   amount
+
+                   Do NOT only look for snake_case.
+                ================================================= */
+
+                const razorpayOrderId =
+                    result.razorpayOrderId ??
+                    result.razorpay_order_id ??
+                    result.order_id ??
+                    booking?.razorpayOrderId ??
+                    booking?.razorpay_order_id ??
+                    booking?.order_id ??
+                    result.data?.razorpayOrderId ??
+                    result.data?.razorpay_order_id;
+
+
+                const razorpayKey =
+                    result.keyId ??
+                    result.key_id ??
+                    result.razorpayKeyId ??
+                    result.razorpay_key_id ??
+                    booking?.keyId ??
+                    booking?.key_id ??
+                    booking?.razorpayKeyId ??
+                    booking?.razorpay_key_id ??
+                    result.data?.keyId ??
+                    result.data?.key_id;
+
+
+                /*
+                 * Backend returns Razorpay amount
+                 * in paise.
+                 *
+                 * We use our calculated rupee amount
+                 * when opening Razorpay because the
+                 * openRazorpay() function converts it
+                 * to paise.
+                 */
+
+                const backendAmount =
+                    Number(
+                        result.amount ??
+                        booking?.amount ??
+                        result.data?.amount ??
+                        0
+                    );
+
+
+                console.log(
+                    "Razorpay Order ID:",
+                    razorpayOrderId
+                );
+
+                console.log(
+                    "Razorpay Key ID:",
+                    razorpayKey
+                );
+
+                console.log(
+                    "Backend Razorpay Amount:",
+                    backendAmount
+                );
+
+
+                /* =================================================
+                   PAYMENT NOT REQUIRED
+                ================================================= */
+
+                if (
+                    result.payment_required === false ||
+                    booking?.payment_required === false ||
+                    amount <= 0
+                ) {
+
+                    finishBooking(
+                        numericBookingId
+                    );
+
+                    return;
+
+                }
+
+
+                /* =================================================
+                   OPEN RAZORPAY
+                ================================================= */
+
+                if (
+                    razorpayOrderId &&
+                    razorpayKey &&
+                    typeof Razorpay !==
+                        "undefined"
+                ) {
+
+                    openRazorpay(
+
+                        numericBookingId,
+
+                        razorpayOrderId,
+
+                        razorpayKey,
+
+                        amount
+
+                    );
+
+                    return;
+
+                }
+
+
+                /* =================================================
+                   BACKEND ALREADY CONFIRMED
+                ================================================= */
+
+                const status =
+                    String(
+                        booking?.status ||
+                        result.status ||
+                        ""
+                    ).toLowerCase();
+
+
+                if (
+                    status === "confirmed" ||
+                    status === "active"
+                ) {
+
+                    finishBooking(
+                        numericBookingId
+                    );
+
+                    return;
+
+                }
+
+
+                throw new Error(
+                    "Booking was created with ID " +
+                    numericBookingId +
+                    ", but Razorpay payment information was not returned by the backend."
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Booking error:",
+                    error
+                );
+
+
+                showError(
+                    error.message ||
+                    "Unable to create booking."
+                );
+
+
+                button.disabled =
+                    false;
+
+
+                button.innerHTML =
+                    originalButton;
+
+
+                lucide.createIcons();
+
+            }
+
+        }
+
+
+        /* =====================================================
+           RAZORPAY
+        ===================================================== */
+
+        function openRazorpay(
+            bookingId,
+            orderId,
+            key,
+            amount
+        ) {
+
+            console.log(
+                "Opening Razorpay:",
+                {
+                    bookingId,
+                    orderId,
+                    key,
+                    amount
+                }
+            );
+
+
+            const options = {
+
+                key:
+                    key,
+
+                /*
+                 * Razorpay expects paise.
+                 *
+                 * Example:
+                 * ₹15 = 1500 paise
+                 */
+
+                amount:
+                    Math.round(
+                        Number(amount) * 100
+                    ),
+
+                currency:
+                    "INR",
+
+                name:
+                    "EV Charge Hub",
+
+                description:
+                    `EV Charging Session - Booking #${bookingId}`,
+
+                order_id:
+                    orderId,
+
+                prefill: {
+
+                    name:
+                        user?.name ||
+                        "",
+
+                    email:
+                        user?.email ||
+                        "",
+
+                    contact:
+                        user?.phone ||
+                        user?.mobileNumber ||
+                        ""
+
+                },
+
+                theme: {
+
+                    color:
+                        "#15803d"
+
+                },
+
+
+                /* =================================================
+                   PAYMENT SUCCESS
+                ================================================= */
+
+                handler:
+                    async function(
+                        response
+                    ) {
+
+                        try {
+
+                            console.log(
+                                "Razorpay payment response:",
+                                response
+                            );
+
+
+                            if (
+                                !response ||
+                                !response.razorpay_order_id ||
+                                !response.razorpay_payment_id ||
+                                !response.razorpay_signature
+                            ) {
+
+                                throw new Error(
+                                    "Razorpay returned incomplete payment information."
+                                );
+
+                            }
+
+
+                            const button =
+                                document.getElementById(
+                                    "bookButton"
+                                );
+
+
+                            button.innerHTML = `
+                                <span class="spinner"></span>
+                                Verifying Payment...
+                            `;
+
+
+                            lucide.createIcons();
+
+
+                            /* =================================================
+                               VERIFY PAYMENT
+                            =================================================
+
+                               Backend requires:
+
+                               razorpay_order_id
+                               razorpay_payment_id
+                               razorpay_signature
+
+                               booking_id is also sent for compatibility.
+                            ================================================= */
+
+                            const verifyResult =
+                                await apiRequest(
+                                    "/bookings/verify-payment",
+                                    {
+
+                                        method:
+                                            "POST",
+
+                                        body:
+                                            JSON.stringify({
+
+                                                booking_id:
+                                                    bookingId,
+
+                                                razorpay_order_id:
+                                                    response.razorpay_order_id,
+
+                                                razorpay_payment_id:
+                                                    response.razorpay_payment_id,
+
+                                                razorpay_signature:
+                                                    response.razorpay_signature
+
+                                            })
+
+                                    }
+                                );
+
+
+                            console.log(
+                                "Payment verification response:",
+                                verifyResult
+                            );
+
+
+                            if (
+                                verifyResult?.success === false
+                            ) {
+
+                                throw new Error(
+                                    verifyResult.message ||
+                                    "Payment verification failed."
+                                );
+
+                            }
+
+
+                            /*
+                             * IMPORTANT:
+                             *
+                             * Store only the REAL
+                             * database booking ID.
+                             */
+
+                            finishBooking(
+                                bookingId
+                            );
+
+
+                        } catch (error) {
+
+                            console.error(
+                                "Payment verification error:",
+                                error
+                            );
+
+
+                            showError(
+                                error.message ||
+                                "Payment verification failed."
+                            );
+
+
+                            resetBookButton();
+
+                        }
+
+                    },
+
+
+                /* =================================================
+                   PAYMENT DISMISSED
+                ================================================= */
+
+                modal: {
+
+                    ondismiss:
+                        function() {
+
+                            showError(
+                                "Payment was cancelled. Your booking may remain pending until payment is completed."
+                            );
+
+
+                            resetBookButton();
+
+                        }
+
+                }
+
+            };
+
+
+            try {
+
+                const razorpay =
+                    new Razorpay(
+                        options
+                    );
+
+
+                razorpay.on(
+                    "payment.failed",
+                    function(response) {
+
+                        console.error(
+                            "Razorpay payment failed:",
+                            response
+                        );
+
+
+                        showError(
+                            response?.error?.description ||
+                            "Payment failed. Please try again."
+                        );
+
+
+                        resetBookButton();
+
+                    }
+                );
+
+
+                razorpay.open();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Unable to open Razorpay:",
+                    error
+                );
+
+
+                showError(
+                    error.message ||
+                    "Unable to open payment gateway."
+                );
+
+
+                resetBookButton();
+
+            }
+
+        }
+
+
+        /* =====================================================
+           BOOKING SUCCESS
+        ===================================================== */
+
+        function finishBooking(
+            bookingId
+        ) {
+
+            /*
+             * Only store the actual MySQL ID.
+             */
+
+            sessionStorage.setItem(
+                "last_booking_id",
+                String(bookingId)
+            );
+
+
+            showSuccess(
+                `Booking #${bookingId} confirmed successfully.`
+            );
+
+
+            setTimeout(
+                () => {
+
+                    window.location.href =
+            `live-charging.html?booking_id=${encodeURIComponent(bookingId)}`;
+
+                },
+                1200
+            );
+
+        }
+
+
+        /* =====================================================
+           RESET BUTTON
+        ===================================================== */
+
+        function resetBookButton() {
+
+            const button =
+                document.getElementById(
+                    "bookButton"
+                );
+
+
+            button.disabled =
+                false;
+
+
+            button.innerHTML = `
+                <i
+                    data-lucide="calendar-check"
+                    size="18"
+                ></i>
+                Confirm Booking
+            `;
+
+
+            lucide.createIcons();
+
+        }
+
+
+        /* =====================================================
+           CALCULATE DURATION
+        ===================================================== */
+
+        function calculateDuration(
+            start,
+            end
+        ) {
+
+            if (
+                !start ||
+                !end
+            ) {
+
+                return 0;
+
+            }
+
+
+            const [
+                startH,
+                startM
+            ] =
+                start
+                    .split(":")
+                    .map(Number);
+
+
+            const [
+                endH,
+                endM
+            ] =
+                end
+                    .split(":")
+                    .map(Number);
+
+
+            const startMinutes =
+                startH * 60 +
+                startM;
+
+
+            const endMinutes =
+                endH * 60 +
+                endM;
+
+
+            /*
+             * Same-day charging only.
+             */
+
+            if (
+                endMinutes <=
+                startMinutes
+            ) {
+
+                return 0;
+
+            }
+
+
+            return (
+                endMinutes -
+                startMinutes
+            ) / 60;
+
+        }
+
+
+        /* =====================================================
+           FORMAT DURATION
+        ===================================================== */
+
+        function formatDuration(
+            duration
+        ) {
+
+            const hours =
+                Math.floor(
+                    duration
+                );
+
+
+            const minutes =
+                Math.round(
+                    (
+                        duration -
+                        hours
+                    ) * 60
+                );
+
+
+            if (
+                hours > 0 &&
+                minutes > 0
+            ) {
+
+                return `${hours} hr ${minutes} min`;
+
+            }
+
+
+            if (
+                hours > 0
+            ) {
+
+                return `${hours} hr`;
+
+            }
+
+
+            return `${minutes} min`;
+
+        }
+
+
+        /* =====================================================
+           FORMAT DATE
+        ===================================================== */
+
+        function formatDate(
+            dateString
+        ) {
+
+            const date =
+                new Date(
+                    `${dateString}T00:00:00`
+                );
+
+
+            return date.toLocaleDateString(
+                "en-IN",
+                {
+
+                    day:
+                        "2-digit",
+
+                    month:
+                        "short",
+
+                    year:
+                        "numeric"
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           FORMAT TIME
+        ===================================================== */
+
+        function formatTime(
+            time
+        ) {
+
+            if (!time) {
+
+                return "";
+
+            }
+
+
+            const [
+                hours,
+                minutes
+            ] =
+                time
+                    .split(":")
+                    .map(Number);
+
+
+            const date =
+                new Date();
+
+
+            date.setHours(
+                hours,
+                minutes,
+                0,
+                0
+            );
+
+
+            return date.toLocaleTimeString(
+                "en-IN",
+                {
+
+                    hour:
+                        "numeric",
+
+                    minute:
+                        "2-digit"
+
+                }
+            );
+
+        }
+
+
+        /* =====================================================
+           ESCAPE HTML
+        ===================================================== */
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(
+                value ?? ""
+            )
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+/* =====================================================
+   NEARBY PLACES
+===================================================== */
+
+let nearbyPlacesCache = {};
+
+let nearbyCurrentPlaces = [];
+
+
+/* =====================================================
+   CATEGORY MAPPING
+===================================================== */
+
+const nearbyCategoryMap = {
+
+    all: {
+        apiCategory: "all",
+        type: null
+    },
+
+    cafe: {
+        apiCategory: "eat",
+        type: "cafe"
+    },
+
+    restaurant: {
+        apiCategory: "eat",
+        type: "restaurant"
+    },
+
+    hotel: {
+        apiCategory: "stay",
+        type: "hotel"
+    },
+
+    shop: {
+        apiCategory: "shop",
+        type: null
+    },
+
+    essentials: {
+        apiCategory: "essentials",
+        type: null
+    }
+
+};
+
+
+/* =====================================================
+   LOAD NEARBY PLACES
+===================================================== */
+
+async function loadNearbyPlaces(
+    category = "all",
+    clickedButton = null
+) {
+
+    const list =
+        document.getElementById(
+            "nearbyPlacesList"
+        );
+
+    const count =
+        document.getElementById(
+            "nearbyPlacesCount"
+        );
+
+
+    if (!list || !count) {
+        return;
+    }
+
+
+    /* =================================================
+       UPDATE ACTIVE BUTTON
+    ================================================= */
+
+    document
+        .querySelectorAll(
+            ".nearby-filter"
+        )
+        .forEach(
+            button => {
+
+                button.classList.remove(
+                    "active"
+                );
+
+            }
+        );
+
+
+    if (clickedButton) {
+
+        clickedButton.classList.add(
+            "active"
+        );
+
+    } else {
+
+        const defaultButton =
+            document.querySelector(
+                `.nearby-filter[data-nearby-category="${category}"]`
+            );
+
+        if (defaultButton) {
+
+            defaultButton.classList.add(
+                "active"
+            );
+
+        }
+
+    }
+
+
+    /* =================================================
+       CHECK STATION
+    ================================================= */
+
+    if (!stationId) {
+
+        renderNearbyError(
+            "No charging station selected."
+        );
+
+        return;
+
+    }
+
+
+    /* =================================================
+       CACHE
+    ================================================= */
+
+    if (
+        nearbyPlacesCache[category] &&
+        nearbyPlacesCache[category].length
+    ) {
+
+        nearbyCurrentPlaces =
+            nearbyPlacesCache[category];
+
+        renderNearbyPlaces(
+            nearbyCurrentPlaces
+        );
+
+        return;
+
+    }
+
+
+    /* =================================================
+       LOADING
+    ================================================= */
+
+    count.textContent =
+        "Loading...";
+
+
+    list.innerHTML = `
+
+        <div class="nearby-loading">
+
+            <div class="nearby-spinner"></div>
+
+            <strong>
+                Finding nearby places
+            </strong>
+
+            <span>
+                Searching around this charging station...
+            </span>
+
+        </div>
+
+    `;
+
+
+    try {
+
+        const mapping =
+            nearbyCategoryMap[
+                category
+            ] ||
+            nearbyCategoryMap.all;
+
+
+        console.log(
+            "[Nearby Places] Loading:",
+            {
+                stationId,
+                category,
+                apiCategory:
+                    mapping.apiCategory
+            }
+        );
+
+
+        /* =================================================
+           IMPORTANT
+
+           For cafe / restaurant we request "eat"
+           from backend and filter the returned
+           places by their actual type.
+        ================================================= */
+
+        const url =
+            `/places/nearby?station_id=${encodeURIComponent(stationId)}&radius=5000&category=${encodeURIComponent(mapping.apiCategory)}`;
+
+
+        const result =
+            await apiRequest(
+                url
+            );
+
+
+        console.log(
+            "[Nearby Places] API response:",
+            result
+        );
+
+
+        let places =
+            result.places ||
+            result.data ||
+            [];
+
+
+        if (
+            !Array.isArray(
+                places
+            )
+        ) {
+
+            places = [];
+
+        }
+
+
+        /* =================================================
+           CLIENT SIDE TYPE FILTER
+        ================================================= */
+
+        if (
+            mapping.type
+        ) {
+
+    places = places.filter(place => {
+
+        const placeType = String(
+            place.type || ""
+        ).toLowerCase();
+
+        const placeCategory = String(
+            place.category || ""
+        ).toLowerCase();
+
+
+        return (
+            placeType.includes(
+                mapping.type
+            ) ||
+            placeCategory.includes(
+                mapping.type
+            )
+        );
+
+    });
+
+}
+
+
+        nearbyPlacesCache[
+            category
+        ] = places;
+
+
+        nearbyCurrentPlaces =
+            places;
+
+
+        renderNearbyPlaces(
+            places
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "[Nearby Places] Error:",
+            error
+        );
+
+
+        renderNearbyError(
+            error.message ||
+            "Unable to load nearby places."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   RENDER PLACES
+===================================================== */
+
+function renderNearbyPlaces(
+    places
+) {
+
+    const list =
+        document.getElementById(
+            "nearbyPlacesList"
+        );
+
+
+    const count =
+        document.getElementById(
+            "nearbyPlacesCount"
+        );
+
+
+    if (!list || !count) {
+        return;
+    }
+
+
+    count.textContent =
+        `${places.length} nearby`;
+
+
+    if (
+        places.length === 0
+    ) {
+
+        list.innerHTML = `
+
+            <div class="nearby-empty">
+
+                <div class="nearby-empty-icon">
+
+                    <i
+                        data-lucide="search-x"
+                        size="20"
+                    ></i>
+
+                </div>
+
+                <strong>
+                    No places found
+                </strong>
+
+                <span>
+                    There are no matching places in this area.
+                </span>
+
+            </div>
+
+        `;
+
+
+        lucide.createIcons();
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+        places
+            .map(
+                (
+                    place
+                ) => {
+
+                    const name =
+                        place.name ||
+                        "Nearby Place";
+
+
+                    const type =
+                        formatNearbyType(
+                            place.type ||
+                            place.category ||
+                            "place"
+                        );
+
+
+                    const rating =
+                        Number(
+                            place.rating ||
+                            0
+                        );
+
+
+                    const reviews =
+                        Number(
+                            place.user_ratings_total ||
+                            0
+                        );
+
+
+                    const distance =
+                        place.distance_km !== undefined
+                            ? Number(
+                                place.distance_km
+                            ).toFixed(2)
+                            : "—";
+
+
+                    const address =
+                        place.address ||
+                        "Address unavailable";
+
+
+                    const isOpen =
+    place.is_open === true;
+
+
+                    const latitude =
+                        place.location?.lat;
+
+
+                    const longitude =
+                        place.location?.lng;
+
+
+                    const icon =
+                        getNearbyIcon(
+                            place.type,
+                            place.category
+                        );
+
+
+                    return `
+
+                        <div class="nearby-place">
+
+                            <div class="nearby-place-main">
+
+                                <div class="nearby-place-icon">
+
+                                    <i
+                                        data-lucide="${icon}"
+                                        size="19"
+                                    ></i>
+
+                                </div>
+
+
+                                <div class="nearby-place-info">
+
+                                    <div
+                                        class="nearby-place-name"
+                                        title="${escapeHtmlNearby(name)}"
+                                    >
+                                        ${escapeHtmlNearby(name)}
+                                    </div>
+
+
+                                    <div class="nearby-place-meta">
+
+                                        <span class="nearby-place-type">
+
+                                            ${escapeHtmlNearby(type)}
+
+                                        </span>
+
+
+                                        ${
+                                            rating > 0
+                                                ? `
+                                                    <span class="nearby-rating">
+
+                                                        ★
+                                                        ${rating.toFixed(1)}
+
+                                                        ${
+                                                            reviews > 0
+                                                                ? `(${reviews})`
+                                                                : ""
+                                                        }
+
+                                                    </span>
+                                                `
+                                                : ""
+                                        }
+
+
+                                        <span class="nearby-distance">
+
+                                            <i
+                                                data-lucide="navigation"
+                                                size="10"
+                                            ></i>
+
+                                            ${distance} km
+
+                                        </span>
+
+
+                                        <span
+                                            class="${
+                                                isOpen
+                                                    ? "nearby-open"
+                                                    : "nearby-closed"
+                                            }"
+                                        >
+
+                                            ${
+                                                isOpen
+                                                    ? "Open"
+                                                    : "Closed"
+                                            }
+
+                                        </span>
+
+                                    </div>
+
+
+                                    <div
+                                        class="nearby-address"
+                                        title="${escapeHtmlNearby(address)}"
+                                    >
+                                        ${escapeHtmlNearby(address)}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            ${
+                                latitude &&
+                                longitude
+                                    ? `
+                                        <button
+                                            type="button"
+                                            class="nearby-directions"
+                                            onclick="openNearbyDirections(
+                                                ${Number(latitude)},
+                                                ${Number(longitude)}
+                                            )"
+                                        >
+
+                                            <i
+                                                data-lucide="route"
+                                                size="13"
+                                            ></i>
+
+                                            Directions
+
+                                        </button>
+                                    `
+                                    : ""
+                            }
+
+                        </div>
+
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    lucide.createIcons();
+
+}
+
+
+/* =====================================================
+   PLACE ICON
+===================================================== */
+
+function getNearbyIcon(
+    type,
+    category
+) {
+
+    const value =
+        String(
+            type ||
+            category ||
+            ""
+        ).toLowerCase();
+
+
+    if (
+        value.includes("cafe") ||
+        value.includes("bakery")
+    ) {
+
+        return "coffee";
+
+    }
+
+
+    if (
+        value.includes("restaurant") ||
+        value.includes("food")
+    ) {
+
+        return "utensils";
+
+    }
+
+
+    if (
+        value.includes("hotel") ||
+        value.includes("lodging")
+    ) {
+
+        return "bed-double";
+
+    }
+
+
+    if (
+        value.includes("shopping") ||
+        value.includes("mall") ||
+        value.includes("supermarket")
+    ) {
+
+        return "shopping-bag";
+
+    }
+
+
+    if (
+        value.includes("hospital") ||
+        value.includes("pharmacy")
+    ) {
+
+        return "heart-pulse";
+
+    }
+
+
+    if (
+        value.includes("parking")
+    ) {
+
+        return "square-parking";
+
+    }
+
+
+    if (
+        value.includes("atm")
+    ) {
+
+        return "banknote";
+
+    }
+
+
+    if (
+        value.includes("park") ||
+        value.includes("spa")
+    ) {
+
+        return "trees";
+
+    }
+
+
+    return "map-pin";
+
+}
+
+
+/* =====================================================
+   FORMAT TYPE
+===================================================== */
+
+function formatNearbyType(
+    type
+) {
+
+    if (!type) {
+        return "Nearby place";
+    }
+
+
+    return String(type)
+        .replace(
+            /_/g,
+            " "
+        )
+        .replace(
+            /\b\w/g,
+            char =>
+                char.toUpperCase()
+        );
+
+}
+
+
+/* =====================================================
+   DIRECTIONS
+===================================================== */
+
+function openNearbyDirections(
+    latitude,
+    longitude
+) {
+
+    if (
+        !Number.isFinite(
+            Number(latitude)
+        ) ||
+        !Number.isFinite(
+            Number(longitude)
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const url =
+        `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+            `${latitude},${longitude}`
+        )}`;
+
+
+    window.open(
+        url,
+        "_blank",
+        "noopener,noreferrer"
+    );
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHtmlNearby(
+    value
+) {
+
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =====================================================
+   ERROR STATE
+===================================================== */
+
+function renderNearbyError(
+    message
+) {
+
+    const list =
+        document.getElementById(
+            "nearbyPlacesList"
+        );
+
+
+    const count =
+        document.getElementById(
+            "nearbyPlacesCount"
+        );
+
+
+    if (!list) {
+        return;
+    }
+
+
+    if (count) {
+
+        count.textContent =
+            "Unavailable";
+
+    }
+
+
+    list.innerHTML = `
+
+        <div class="nearby-error">
+
+            <div class="nearby-error-icon">
+
+                <i
+                    data-lucide="triangle-alert"
+                    size="20"
+                ></i>
+
+            </div>
+
+            <strong>
+                Nearby places unavailable
+            </strong>
+
+            <span>
+                ${escapeHtmlNearby(message)}
+            </span>
+
+        </div>
+
+    `;
+
+
+    lucide.createIcons();
+
+}
+        /* =====================================================
+           INITIALIZE
+        ===================================================== */
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            () => {
+
+                lucide.createIcons();
+
+
+                if (stationId) {
+
+                    loadStation();
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
