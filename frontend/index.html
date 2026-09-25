@@ -2544,7 +2544,8 @@
                 }
 
                 try {
-                    const res = await fetch('http://localhost:5000/api/chat/validate-key', {
+                    const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000/api' : '/api';
+                    const res = await fetch(`${apiBase}/chat/validate-key`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ apiKey: keyVal })
@@ -2700,7 +2701,8 @@
                     headers['x-gemini-api-key'] = customKey;
                 }
 
-                const response = await fetch('http://localhost:5000/api/chat', {
+                const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:5000/api' : '/api';
+                const response = await fetch(`${apiBase}/chat`, {
                     method: 'POST',
                     headers: headers,
                     body: JSON.stringify({

@@ -66,27 +66,36 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // 5. Health Check Route
-app.get('/api/health', (req, res) => {
+const healthCheck = (req, res) => {
     res.status(200).json({
         status: 'success',
         message: 'EV Charge Hub API is running'
     });
+};
+app.get('/api/health', healthCheck);
+app.get('/health', healthCheck);
+
+// 6. Mount Routes (supports both /api/* and /* for serverless rewrites)
+const routeList = [
+    ['/auth', authRoutes],
+    ['/users', userRoutes],
+    ['/vehicles', vehicleRoutes],
+    ['/stations', stationRoutes],
+    ['/bookings', bookingRoutes],
+    ['/places', placesRoutes],
+    ['/notifications', notificationRoutes],
+    ['/reviews', reviewRoutes],
+    ['/admin', adminRoutes],
+    ['/chat', chatRoutes],
+    ['/wallet', walletRoutes],
+];
+
+routeList.forEach(([routePath, router]) => {
+    app.use('/api' + routePath, router);
+    app.use(routePath, router);
 });
 
-// 6. Mount Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/vehicles', vehicleRoutes);
-app.use('/api/stations', stationRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/places', placesRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/wallet', walletRoutes);
-
-// 7. Start Server
+// 7. Start Server (Only when run directly or in non-serverless dev)
 const PORT = process.env.PORT || 5000;
 
 server.on('error', (err) => {
@@ -99,6 +108,11 @@ server.on('error', (err) => {
     }
 });
 
-server.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
+if (!process.env.VERCEL) {
+    server.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+    });
+}
+
+export default app;
+export { app, server, io };

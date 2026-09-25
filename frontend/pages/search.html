@@ -1906,7 +1906,10 @@
             try {
                 // Fetch full city & expressway coverage so user can filter instantly across 5km, 10km, 25km, or all
                 const radiusParam = 100;
-                const url = `http://localhost:5000/api/stations?lat=${userLat}&lng=${userLng}&radius=${radiusParam}`;
+                const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                    ? 'http://localhost:5000/api'
+                    : '/api';
+                const url = `${apiBase}/stations?lat=${userLat}&lng=${userLng}&radius=${radiusParam}`;
                 
                 const response = await fetch(url);
                 const data = await response.json();

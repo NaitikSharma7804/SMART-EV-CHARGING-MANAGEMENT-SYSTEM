@@ -4666,7 +4666,9 @@
         ========================================================= */
 
         const DASHBOARD_API =
-            "http://localhost:5000/api";
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? "http://localhost:5000/api"
+                : "/api";
 
         const REFRESH_INTERVAL =
             5000;
@@ -6128,7 +6130,7 @@
 
         const response =
             await fetch(
-                'http://localhost:5000/api/vehicles',
+                `${DASHBOARD_API}/vehicles`,
                 {
                     method: 'GET',
 
@@ -8099,7 +8101,7 @@ function escapeHtml(value) {
                 }
 
                 try {
-                    const res = await fetch("http://localhost:5000/api/chat/validate-key", {
+                    const res = await fetch(`${DASHBOARD_API}/chat/validate-key`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ apiKey: keyVal })

@@ -6,7 +6,9 @@
 
 const EV_FAV_IDS_KEY = 'ev_favorite_station_ids';
 const EV_FAV_STATIONS_KEY = 'ev_favorite_stations_data';
-const EV_API_BASE = 'http://localhost:5000/api';
+const EV_API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5000/api'
+    : '/api';
 
 /**
  * Get cached favorite station IDs from localStorage
