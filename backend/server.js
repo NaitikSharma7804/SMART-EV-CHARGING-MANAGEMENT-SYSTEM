@@ -65,6 +65,11 @@ app.use(express.urlencoded({ extended: true }));
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../frontend')));
 
+// Google Search Console Verification
+app.get('/google6614a35e3e9adbf7.html', (req, res) => {
+    res.type('text/html').send('google-site-verification: google6614a35e3e9adbf7.html');
+});
+
 // 5. Health Check Route
 const healthCheck = (req, res) => {
     res.status(200).json({
