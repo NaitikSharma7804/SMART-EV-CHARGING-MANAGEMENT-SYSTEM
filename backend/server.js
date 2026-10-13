@@ -65,7 +65,7 @@ app.use(express.urlencoded({ extended: true }));
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Google Search Console Verification
+// Google Search Console Verification (File & Meta: RYzZm02XhMc8jkQGNCnMXq8W0wZqsbTjClzq0n2j_gg)
 app.get('/google6614a35e3e9adbf7.html', (req, res) => {
     res.type('text/html').send('google-site-verification: google6614a35e3e9adbf7.html');
 });
