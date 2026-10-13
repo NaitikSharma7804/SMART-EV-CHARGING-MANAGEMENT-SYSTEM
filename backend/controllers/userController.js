@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 export const getProfile = async (req, res) => {
     try {
         const [users] = await pool.query(
-            'SELECT id, name, email, mobile, role, status, created_at FROM users WHERE id = ?', 
+            'SELECT id, name, email, phone, phone AS mobile, role, status, created_at FROM users WHERE id = ?', 
             [req.user.id]
         );
 
@@ -16,23 +16,24 @@ export const getProfile = async (req, res) => {
         return res.status(200).json({ success: true, data: users[0] });
     } catch (error) {
         console.error('Get Profile Error:', error);
-        return res.status(500).json({ success: false, message: 'Failed to fetch profile.' });
+        return res.status(500).json({ success: false, message: 'Failed to fetch profile.', error: error.message });
     }
 };
 
 export const updateProfile = async (req, res) => {
     try {
-        const { name, mobile } = req.body;
+        const { name, mobile, phone } = req.body;
+        const phoneVal = phone || mobile || '';
 
         await pool.query(
-            'UPDATE users SET name = ?, mobile = ? WHERE id = ?', 
-            [name, mobile, req.user.id]
+            'UPDATE users SET name = ?, phone = ? WHERE id = ?', 
+            [name, phoneVal, req.user.id]
         );
 
         return res.status(200).json({ success: true, message: 'Profile updated successfully.' });
     } catch (error) {
         console.error('Update Profile Error:', error);
-        return res.status(500).json({ success: false, message: 'Failed to update profile.' });
+        return res.status(500).json({ success: false, message: 'Failed to update profile.', error: error.message });
     }
 };
 

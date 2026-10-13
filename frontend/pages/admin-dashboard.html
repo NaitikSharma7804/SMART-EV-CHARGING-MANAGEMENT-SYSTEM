@@ -2026,15 +2026,8 @@
             const role = String(userData.role || '').toUpperCase();
 
             if (!token || (role !== 'ADMIN' && role !== 'ADMINISTRATOR')) {
-                // Auto mock or redirect
-                // If demo mode or user wants to inspect, set fallback admin
-                const mockAdmin = {
-                    id: 1,
-                    name: 'EV Charge Hub Admin',
-                    email: 'admin@evchargehub.com',
-                    role: 'ADMIN'
-                };
-                setUser(mockAdmin);
+                window.location.href = 'login.html';
+                return;
             } else {
                 setUser(userData);
             }

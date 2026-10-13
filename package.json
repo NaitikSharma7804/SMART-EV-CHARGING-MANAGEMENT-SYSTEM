@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js"
+    "dev": "nodemon backend/server.js",
+    "test": "pytest",
+    "test:headed": "pytest --headed"
   },
   "dependencies": {
     "@google/genai": "^2.22.0",
