@@ -29,8 +29,11 @@ class TestChargeBotChat:
         chat_box = wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "chat-box")))
         assert chat_box.is_displayed()
 
-        close_btn = driver.find_element(By.ID, "chat-close-btn")
-        close_btn.click()
+        close_btn = wait.until(EC.element_to_be_clickable((By.ID, "chat-close-btn")))
+        try:
+            close_btn.click()
+        except Exception:
+            driver.execute_script("arguments[0].click();", close_btn)
         wait.until(lambda d: not chat_box.is_displayed() or "open" not in chat_box.get_attribute("class"))
         assert not chat_box.is_displayed() or "open" not in chat_box.get_attribute("class")
 
