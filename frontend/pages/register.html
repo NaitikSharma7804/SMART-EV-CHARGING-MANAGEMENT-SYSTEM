@@ -1367,18 +1367,19 @@
                 </div>
 
 
-                <!-- DEVELOPMENT OTP -->
-
+                <!-- DEMO OTP BANNER -->
                 <div
                     id="demoOtp"
-                    class="demo-otp">
-
-                    Development OTP:
-
-                    <strong id="demoOtpValue"></strong>
-
+                    class="demo-otp"
+                    style="display:none; cursor:pointer;"
+                    title="Click to auto-fill code">
+                    <span style="display:inline-flex;align-items:center;gap:6px;font-weight:600;">
+                        <i data-lucide="key" style="width:14px;height:14px;"></i>
+                        Verification Code (Demo):
+                    </span>
+                    <strong id="demoOtpValue" style="margin-left:6px;font-size:14px;letter-spacing:1px;text-decoration:underline;"></strong>
+                    <span style="display:block;font-size:10px;opacity:0.8;margin-top:2px;">(Click to auto-fill)</span>
                 </div>
-
 
                 <button
                     type="submit"
@@ -1393,8 +1394,16 @@
 
                 </button>
 
+                <div class="auth-links" style="display:flex;justify-content:center;align-items:center;gap:12px;">
 
-                <div class="auth-links">
+                    <a
+                        href="#"
+                        id="resendOtpBtn">
+                        <i data-lucide="rotate-ccw" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>
+                        Resend Code
+                    </a>
+
+                    <span style="color:#d1d5db;">•</span>
 
                     <a
                         href="#"
@@ -1405,7 +1414,6 @@
                     </a>
 
                 </div>
-
             </form>
 
 
@@ -2192,6 +2200,10 @@
                     demoOtpBox.style.display =
                         'block';
 
+                    otpInput.value =
+                        data.demoOtp;
+
+                    refreshIcons();
 
                     console.log(
                         '===================================='
@@ -2410,6 +2422,73 @@
 
         }
     );
+
+
+    /* =====================================================
+       DEMO OTP AUTO-FILL ON CLICK
+    ===================================================== */
+
+    demoOtpBox.addEventListener('click', () => {
+        if (demoOtpValue.textContent) {
+            otpInput.value = demoOtpValue.textContent.trim();
+            otpInput.focus();
+        }
+    });
+
+
+    /* =====================================================
+       RESEND OTP
+    ===================================================== */
+
+    document
+        .getElementById('resendOtpBtn')
+        ?.addEventListener(
+            'click',
+            async (event) => {
+
+                event.preventDefault();
+
+                if (!registeredEmail) {
+                    showAlert('Registration session expired. Please register again.');
+                    return;
+                }
+
+                const resendBtn = event.currentTarget;
+                const originalHtml = resendBtn.innerHTML;
+                resendBtn.innerHTML = 'Generating...';
+
+                try {
+
+                    const data = await request(
+                        '/auth/resend-otp',
+                        'POST',
+                        { email: registeredEmail }
+                    );
+
+                    if (data.demoOtp) {
+                        demoOtpValue.textContent = data.demoOtp;
+                        demoOtpBox.style.display = 'block';
+                        otpInput.value = data.demoOtp;
+                        showAlert(`New verification code: ${data.demoOtp}`, 'success');
+                    } else {
+                        showAlert(data.message || 'New OTP generated.', 'success');
+                    }
+
+                    refreshIcons();
+
+                } catch (error) {
+
+                    showAlert(error.message || 'Failed to resend OTP.');
+
+                } finally {
+
+                    resendBtn.innerHTML = originalHtml;
+                    refreshIcons();
+
+                }
+
+            }
+        );
 
 
     /* =====================================================

@@ -141,7 +141,7 @@ export const register = async (req, res) => {
         const [existingUsers] =
             await pool.query(
                 `
-                SELECT id, email, phone
+                SELECT id, email, phone, is_verified
                 FROM users
                 WHERE email = ?
                    OR phone = ?
@@ -153,96 +153,107 @@ export const register = async (req, res) => {
                 ]
             );
 
+        let userId;
 
         if (existingUsers.length > 0) {
+            const existing = existingUsers[0];
 
-            const existing =
-                existingUsers[0];
+            if (existing.is_verified) {
+                if (
+                    existing.email &&
+                    existing.email.toLowerCase() === cleanEmail
+                ) {
+                    return res.status(409).json({
+                        success: false,
+                        message: 'Email is already registered. Please login.'
+                    });
+                }
 
-
-            if (
-                existing.email &&
-                existing.email.toLowerCase() === cleanEmail
-            ) {
+                if (
+                    existing.phone &&
+                    existing.phone === cleanPhone
+                ) {
+                    return res.status(409).json({
+                        success: false,
+                        message: 'Phone number is already registered.'
+                    });
+                }
 
                 return res.status(409).json({
                     success: false,
-                    message: 'Email is already registered.'
+                    message: 'User is already registered.'
                 });
-
             }
 
+            // User exists but has not verified yet -> Update credentials and reissue OTP
+            const passwordHash =
+                await bcrypt.hash(
+                    password,
+                    10
+                );
 
-            if (
-                existing.phone &&
-                existing.phone === cleanPhone
-            ) {
-
-                return res.status(409).json({
-                    success: false,
-                    message: 'Phone number is already registered.'
-                });
-
-            }
-
-
-            return res.status(409).json({
-                success: false,
-                message: 'User is already registered.'
-            });
-
-        }
-
-
-        // --------------------------------------------------------
-        // HASH PASSWORD
-        // --------------------------------------------------------
-
-        const passwordHash =
-            await bcrypt.hash(
-                password,
-                10
-            );
-
-
-        // --------------------------------------------------------
-        // INSERT USER
-        // --------------------------------------------------------
-
-        const [result] =
             await pool.query(
                 `
-                INSERT INTO users
-                (
-                    name,
-                    email,
-                    password,
-                    phone,
-                    role,
-                    is_verified
-                )
-                VALUES
-                (
-                    ?,
-                    ?,
-                    ?,
-                    ?,
-                    'user',
-                    FALSE
-                )
+                UPDATE users
+                SET name = ?,
+                    password = ?,
+                    phone = ?
+                WHERE id = ?
                 `,
                 [
                     cleanName,
-                    cleanEmail,
                     passwordHash,
-                    cleanPhone
+                    cleanPhone,
+                    existing.id
                 ]
             );
 
+            userId = existing.id;
 
-        const userId =
-            result.insertId;
+        } else {
 
+            // --------------------------------------------------------
+            // HASH PASSWORD & INSERT NEW USER
+            // --------------------------------------------------------
+
+            const passwordHash =
+                await bcrypt.hash(
+                    password,
+                    10
+                );
+
+            const [result] =
+                await pool.query(
+                    `
+                    INSERT INTO users
+                    (
+                        name,
+                        email,
+                        password,
+                        phone,
+                        role,
+                        is_verified
+                    )
+                    VALUES
+                    (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        'user',
+                        FALSE
+                    )
+                    `,
+                    [
+                        cleanName,
+                        cleanEmail,
+                        passwordHash,
+                        cleanPhone
+                    ]
+                );
+
+            userId = result.insertId;
+        }
 
         // --------------------------------------------------------
         // GENERATE OTP
@@ -301,7 +312,7 @@ export const register = async (req, res) => {
 
 
         console.log('========================================');
-        console.log('USER CREATED');
+        console.log('USER REGISTRATION OTP GENERATED');
         console.log('User ID:', userId);
         console.log('Email:', cleanEmail);
         console.log('OTP:', otp);
@@ -317,10 +328,7 @@ export const register = async (req, res) => {
 
             userId: userId,
 
-            demoOtp:
-                process.env.NODE_ENV !== 'production'
-                    ? otp
-                    : undefined
+            demoOtp: otp
 
         });
 
@@ -345,6 +353,98 @@ export const register = async (req, res) => {
                     ? error.message
                     : undefined
 
+        });
+
+    }
+
+};
+
+
+
+// ============================================================
+// 1.1 RESEND OTP
+// POST /api/auth/resend-otp
+// ============================================================
+
+export const resendOtp = async (req, res) => {
+
+    try {
+
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email address is required.'
+            });
+        }
+
+        const cleanEmail =
+            String(email).trim().toLowerCase();
+
+        const otp =
+            Math.floor(
+                100000 +
+                Math.random() * 900000
+            ).toString();
+
+        const expiresAt =
+            new Date(
+                Date.now() +
+                10 * 60 * 1000
+            );
+
+        await pool.query(
+            `
+            DELETE FROM otp_verifications
+            WHERE identifier = ?
+            `,
+            [cleanEmail]
+        );
+
+        await pool.query(
+            `
+            INSERT INTO otp_verifications
+            (
+                identifier,
+                otp_code,
+                expires_at,
+                attempts
+            )
+            VALUES
+            (
+                ?,
+                ?,
+                ?,
+                0
+            )
+            `,
+            [
+                cleanEmail,
+                otp,
+                expiresAt
+            ]
+        );
+
+        console.log('========================================');
+        console.log('RESEND OTP GENERATED');
+        console.log('Email:', cleanEmail);
+        console.log('OTP:', otp);
+        console.log('========================================');
+
+        return res.status(200).json({
+            success: true,
+            message: 'New OTP generated successfully.',
+            demoOtp: otp
+        });
+
+    } catch (error) {
+
+        console.error('RESEND OTP ERROR:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to generate OTP.'
         });
 
     }
