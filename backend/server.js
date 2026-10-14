@@ -1,4 +1,4 @@
-// backend/server.js - v1.0.4 - Map tile layer updated
+// backend/server.js - v1.0.5 - Switch to OSM HOT tiles (no API key required)
 import 'dotenv/config';
 
 import express from 'express';
