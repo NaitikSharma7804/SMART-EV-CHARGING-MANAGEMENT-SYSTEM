@@ -877,8 +877,9 @@ export const createBooking = async (
         // INSERT BOOKING
         // ====================================================
 
-        const [bookingResult] =
-            await connection.query(
+        let bookingResult;
+        try {
+            [bookingResult] = await connection.query(
                 `
                 INSERT INTO bookings
                 (
@@ -892,6 +893,7 @@ export const createBooking = async (
                     end_time,
                     status,
                     amount,
+                    total_amount,
                     razorpay_order_id,
                     payment_status
                 )
@@ -908,6 +910,7 @@ export const createBooking = async (
                     'Pending',
                     ?,
                     ?,
+                    ?,
                     'Pending'
                 )
                 `,
@@ -921,47 +924,117 @@ export const createBooking = async (
                     start_time,
                     end_time,
                     numericAmount,
-                    razorpayOrder.id
+                    numericAmount,
+                    razorpayOrder ? razorpayOrder.id : null
                 ]
             );
+        } catch (insErr) {
+            // Fallback for minimal bookings table schemas without total_amount or razorpay_order_id
+            [bookingResult] = await connection.query(
+                `
+                INSERT INTO bookings
+                (
+                    user_id,
+                    vehicle_id,
+                    station_id,
+                    charger_id,
+                    slot_id,
+                    booking_date,
+                    start_time,
+                    end_time,
+                    status,
+                    amount
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    'Pending',
+                    ?
+                )
+                `,
+                [
+                    userId,
+                    vehicle_id,
+                    station_id,
+                    charger_id,
+                    slot_id || null,
+                    booking_date,
+                    start_time,
+                    end_time,
+                    numericAmount
+                ]
+            );
+        }
 
-
-        const bookingId =
-            bookingResult.insertId;
+        const bookingId = bookingResult.insertId;
 
 
         // ====================================================
         // CREATE PAYMENT RECORD
         // ====================================================
 
-        await connection.query(
-            `
-            INSERT INTO payments
-            (
-                booking_id,
-                user_id,
-                amount,
-                currency,
-                razorpay_order_id,
-                status
-            )
-            VALUES
-            (
-                ?,
-                ?,
-                ?,
-                'INR',
-                ?,
-                'Pending'
-            )
-            `,
-            [
-                bookingId,
-                userId,
-                numericAmount,
-                razorpayOrder.id
-            ]
-        );
+        try {
+            await connection.query(
+                `
+                INSERT INTO payments
+                (
+                    booking_id,
+                    user_id,
+                    amount,
+                    currency,
+                    razorpay_order_id,
+                    status
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    'INR',
+                    ?,
+                    'Pending'
+                )
+                `,
+                [
+                    bookingId,
+                    userId,
+                    numericAmount,
+                    razorpayOrder ? razorpayOrder.id : null
+                ]
+            );
+        } catch (payErr) {
+            // Fallback for schemas without user_id or currency in payments table
+            await connection.query(
+                `
+                INSERT INTO payments
+                (
+                    booking_id,
+                    amount,
+                    razorpay_order_id,
+                    status
+                )
+                VALUES
+                (
+                    ?,
+                    ?,
+                    ?,
+                    'Pending'
+                )
+                `,
+                [
+                    bookingId,
+                    numericAmount,
+                    razorpayOrder ? razorpayOrder.id : null
+                ]
+            );
+        }
 
 
         // ====================================================
