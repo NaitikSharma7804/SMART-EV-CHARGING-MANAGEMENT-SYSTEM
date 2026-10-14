@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /backend/
+
+Sitemap: https://ev-charge-hub-rwga.onrender.com/

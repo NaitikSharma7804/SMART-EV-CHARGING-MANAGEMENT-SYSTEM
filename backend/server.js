@@ -70,6 +70,11 @@ app.get('/google6614a35e3e9adbf7.html', (req, res) => {
     res.type('text/html').send('google-site-verification: google6614a35e3e9adbf7.html');
 });
 
+// Trust & Legal Direct Routes
+app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, '../frontend/pages/privacy.html')));
+app.get('/terms', (req, res) => res.sendFile(path.join(__dirname, '../frontend/pages/terms.html')));
+app.get('/contact', (req, res) => res.sendFile(path.join(__dirname, '../frontend/pages/contact.html')));
+
 // 5. Health Check Route
 const healthCheck = (req, res) => {
     res.status(200).json({

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Support | EV Charge Hub</title>
+    <meta name="description" content="Contact EV Charge Hub Support. Get assistance with EV charging stations, reservations, and account help.">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/premium-ui.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            background: #f7f9f8;
+            color: #111827;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .policy-nav {
+            height: 72px;
+            padding: 0 5%;
+            background: #ffffff;
+            border-bottom: 1px solid #e5ebe7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .policy-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #111827;
+            font-weight: 800;
+            font-size: 20px;
+        }
+        .policy-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: #090d0b;
+            color: #22c55e;
+            display: grid;
+            place-items: center;
+            border-radius: 10px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #15803d;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: #ecfdf3;
+            transition: all 0.2s;
+        }
+        .back-link:hover {
+            background: #dcfce7;
+        }
+        .contact-container {
+            max-width: 860px;
+            margin: 40px auto 80px;
+            padding: 0 24px;
+        }
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 768px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .contact-card {
+            background: #ffffff;
+            border: 1px solid #e5ebe7;
+            border-radius: 18px;
+            padding: 36px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+        .contact-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ecfdf3;
+            color: #15803d;
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+        .contact-card h1 {
+            margin: 0 0 10px;
+            font-size: 28px;
+            font-weight: 800;
+            color: #111827;
+        }
+        .contact-card p {
+            margin: 0 0 24px;
+            color: #6b766f;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #ecfdf3;
+            color: #15803d;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+        .info-text strong {
+            display: block;
+            font-size: 14px;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+        .info-text span, .info-text a {
+            font-size: 14px;
+            color: #4b5563;
+            text-decoration: none;
+        }
+        .info-text a:hover {
+            color: #15803d;
+            text-decoration: underline;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: #16a34a;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .submit-btn:hover {
+            background: #15803d;
+        }
+    </style>
+</head>
+<body>
+    <nav class="policy-nav">
+        <a href="../index.html" class="policy-brand">
+            <span class="policy-brand-icon"><i data-lucide="zap"></i></span>
+            EV Charge Hub
+        </a>
+        <a href="../index.html" class="back-link">
+            <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back to Home
+        </a>
+    </nav>
+
+    <main class="contact-container">
+        <div class="contact-grid">
+            <div class="contact-card">
+                <span class="contact-badge"><i data-lucide="headphones" style="width: 14px; height: 14px;"></i> Customer Support</span>
+                <h1>Get in Touch</h1>
+                <p>Have questions about charger reservations, station locations, or your EV Charge Hub account? Our team is here to assist you.</p>
+
+                <div class="info-item">
+                    <div class="info-icon"><i data-lucide="mail"></i></div>
+                    <div class="info-text">
+                        <strong>Official Email Support</strong>
+                        <a href="mailto:support@evchargehub.com">support@evchargehub.com</a>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon"><i data-lucide="clock"></i></div>
+                    <div class="info-text">
+                        <strong>Support Operating Hours</strong>
+                        <span>Monday – Sunday: 24/7 Monitoring</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon"><i data-lucide="map-pin"></i></div>
+                    <div class="info-text">
+                        <strong>Headquarters</strong>
+                        <span>EV Charge Hub Mobility Technologies, Global Operations</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-card">
+                <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 700; color: #111827;">Send us a message</h2>
+                <form id="contactForm" onsubmit="event.preventDefault(); document.getElementById('msgSent').style.display='block'; this.reset();">
+                    <div class="form-group">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" required placeholder="john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" rows="4" required placeholder="How can we help you today?"></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">
+                        <i data-lucide="send" style="width: 16px; height: 16px;"></i> Send Inquiry
+                    </button>
+                    <div id="msgSent" style="display:none; margin-top: 14px; padding: 10px; border-radius: 8px; background: #ecfdf3; color: #15803d; font-size: 13px; text-align: center; font-weight: 600;">
+                        ✓ Thank you! Your message has been received. Our team will contact you shortly.
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
