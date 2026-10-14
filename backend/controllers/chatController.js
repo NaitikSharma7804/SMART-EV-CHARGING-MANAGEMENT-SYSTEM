@@ -112,10 +112,16 @@ export const handleChat = async (req, res) => {
                 }
 
                 const [vehicles] = await pool.query(
-                    'SELECT id, vehicle_name, vehicle_model, vehicle_name AS brand, vehicle_model AS model, vehicle_number, battery_capacity, connector_type FROM vehicles WHERE user_id = ?',
+                    'SELECT * FROM vehicles WHERE user_id = ?',
                     [userId]
                 );
-                userVehicles = vehicles;
+                userVehicles = (vehicles || []).map(v => ({
+                    ...v,
+                    brand: v.brand || v.vehicle_name || 'EV',
+                    model: v.model || v.vehicle_model || 'Vehicle',
+                    vehicle_name: v.vehicle_name || v.brand || 'EV',
+                    vehicle_model: v.vehicle_model || v.model || 'Vehicle'
+                }));
 
                 const [bookings] = await pool.query(`
                     SELECT b.id, b.booking_date, b.start_time, b.end_time, b.amount, b.status, 

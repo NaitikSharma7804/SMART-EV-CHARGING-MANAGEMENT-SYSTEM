@@ -480,12 +480,7 @@ export const createBooking = async (
         const [vehicles] =
             await connection.query(
                 `
-                SELECT
-                    id,
-                    user_id,
-                    vehicle_name,
-                    vehicle_number,
-                    connector_type
+                SELECT *
                 FROM vehicles
                 WHERE id = ?
                 AND user_id = ?
@@ -1473,6 +1468,16 @@ export const getMyBookings = async (
         );
 
 
+        // Fetch user vehicles safely for mapping
+        let userVehicles = [];
+        try {
+            const [vRows] = await pool.query('SELECT * FROM vehicles WHERE user_id = ?', [userId]);
+            userVehicles = vRows;
+        } catch (vErr) {
+            console.warn('Vehicle lookup notice in getMyBookings:', vErr.message);
+        }
+        const vehicleMap = new Map(userVehicles.map(v => [v.id, v]));
+
         // ====================================================
         // FETCH BOOKINGS
         // ====================================================
@@ -1504,9 +1509,21 @@ export const getMyBookings = async (
 
                     b.amount,
 
-                    b.razorpay_order_id,
+                    COALESCE((
+                        SELECT p1.razorpay_order_id
+                        FROM payments p1
+                        WHERE p1.booking_id = b.id
+                        ORDER BY p1.id DESC
+                        LIMIT 1
+                    ), '') AS razorpay_order_id,
 
-                    b.razorpay_payment_id,
+                    COALESCE((
+                        SELECT p4.razorpay_payment_id
+                        FROM payments p4
+                        WHERE p4.booking_id = b.id
+                        ORDER BY p4.id DESC
+                        LIMIT 1
+                    ), '') AS razorpay_payment_id,
 
                     b.payment_status,
 
@@ -1554,21 +1571,6 @@ export const getMyBookings = async (
 
 
                     /* ======================================
-                       VEHICLE
-                    ====================================== */
-
-                    v.vehicle_name AS vehicle_name,
-
-                    v.vehicle_number AS vehicle_number,
-
-                    v.vehicle_model AS vehicle_model,
-
-                    v.connector_type AS vehicle_connector_type,
-
-                    v.battery_capacity AS battery_capacity,
-
-
-                    /* ======================================
                        LATEST PAYMENT
                     ====================================== */
 
@@ -1593,25 +1595,25 @@ export const getMyBookings = async (
 
 
                     (
-    SELECT
-        p4.razorpay_payment_id
-    FROM payments p4
-    WHERE p4.booking_id = b.id
-    ORDER BY p4.id DESC
-    LIMIT 1
-) AS payment_record_id,
+                        SELECT
+                            p4.razorpay_payment_id
+                        FROM payments p4
+                        WHERE p4.booking_id = b.id
+                        ORDER BY p4.id DESC
+                        LIMIT 1
+                    ) AS payment_record_id,
 
 
-/* ======================================
-   REVIEW STATUS
-   ====================================== */
+                    /* ======================================
+                       REVIEW STATUS
+                    ====================================== */
 
-EXISTS (
-    SELECT 1
-    FROM reviews r
-    WHERE r.booking_id = b.id
-    AND r.user_id = b.user_id
-) AS review_exists
+                    EXISTS (
+                        SELECT 1
+                        FROM reviews r
+                        WHERE r.booking_id = b.id
+                        AND r.user_id = b.user_id
+                    ) AS review_exists
 
 
                 FROM bookings b
@@ -1623,10 +1625,6 @@ EXISTS (
 
                 LEFT JOIN chargers c
                     ON b.charger_id = c.id
-
-
-                LEFT JOIN vehicles v
-                    ON b.vehicle_id = v.id
 
 
                 WHERE b.user_id = ?
@@ -1657,6 +1655,20 @@ EXISTS (
         const updatedBookings =
             bookings.map(
                 booking => {
+
+                    // Populate vehicle fields safely from vehicleMap
+                    const veh = vehicleMap.get(booking.vehicle_id) || {};
+                    const vName = veh.vehicle_name || veh.brand || veh.make || 'EV Vehicle';
+                    const vModel = veh.vehicle_model || veh.model || 'Standard';
+                    const vNumber = veh.vehicle_number || '';
+                    const vConnector = veh.connector_type || '';
+                    const vBattery = veh.battery_capacity || null;
+
+                    booking.vehicle_name = vName;
+                    booking.vehicle_number = vNumber;
+                    booking.vehicle_model = vModel;
+                    booking.vehicle_connector_type = vConnector;
+                    booking.battery_capacity = vBattery;
 
                     // ------------------------------------------------
                     // EFFECTIVE STATUS
@@ -2039,10 +2051,7 @@ EXISTS (
             message:
                 'Failed to fetch bookings.',
 
-            error:
-                process.env.NODE_ENV !== 'production'
-                    ? error.message
-                    : undefined
+            error: error.message
 
         });
 
@@ -2526,36 +2535,55 @@ export const getRecurringSchedules = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Authentication required.' });
         }
 
-        const query = `
-            SELECT
-                rs.id,
-                rs.user_id,
-                rs.station_id,
-                rs.vehicle_id,
-                rs.days_of_week,
-                rs.time_of_day,
-                rs.duration_minutes,
-                rs.status,
-                rs.created_at,
-                s.name AS station_name,
-                s.address AS station_address,
-                s.city AS station_city,
-                v.vehicle_name,
-                v.vehicle_model,
-                v.connector_type
-            FROM recurring_schedules rs
-            JOIN charging_stations s ON rs.station_id = s.id
-            LEFT JOIN vehicles v ON rs.vehicle_id = v.id
-            WHERE rs.user_id = ? AND rs.status = 'active'
-            ORDER BY rs.id DESC
-        `;
+        let userVehicles = [];
+        try {
+            const [vRows] = await pool.query('SELECT * FROM vehicles WHERE user_id = ?', [userId]);
+            userVehicles = vRows;
+        } catch (vErr) {
+            console.warn('Vehicle lookup notice in getRecurringSchedules:', vErr.message);
+        }
+        const vehicleMap = new Map(userVehicles.map(v => [v.id, v]));
 
-        const [rows] = await pool.query(query, [userId]);
+        let rows = [];
+        try {
+            const query = `
+                SELECT
+                    rs.id,
+                    rs.user_id,
+                    rs.station_id,
+                    rs.vehicle_id,
+                    rs.days_of_week,
+                    rs.time_of_day,
+                    rs.duration_minutes,
+                    rs.status,
+                    rs.created_at,
+                    s.name AS station_name,
+                    s.address AS station_address,
+                    s.city AS station_city
+                FROM recurring_schedules rs
+                JOIN charging_stations s ON rs.station_id = s.id
+                WHERE rs.user_id = ? AND rs.status = 'active'
+                ORDER BY rs.id DESC
+            `;
+            const [resRows] = await pool.query(query, [userId]);
+            rows = resRows;
+        } catch (queryErr) {
+            console.warn('recurring_schedules query notice:', queryErr.message);
+            return res.status(200).json({ success: true, count: 0, schedules: [] });
+        }
 
         const formatted = rows.map(r => {
             const nextOccur = calculateNextOccurrence(r.days_of_week, r.time_of_day);
+            const veh = vehicleMap.get(r.vehicle_id) || {};
+            const vName = veh.vehicle_name || veh.brand || veh.make || 'Registered EV';
+            const vModel = veh.vehicle_model || veh.model || 'EV';
+            const vConnector = veh.connector_type || '';
+
             return {
                 ...r,
+                vehicle_name: vName,
+                vehicle_model: vModel,
+                connector_type: vConnector,
                 formatted_time: formatTime12(r.time_of_day),
                 next_charging: nextOccur ? nextOccur.label : 'Upcoming',
                 next_timestamp: nextOccur ? nextOccur.timestamp : null,
@@ -2617,96 +2645,114 @@ export const getNextScheduledCharging = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Authentication required.' });
         }
 
+        let userVehicles = [];
+        try {
+            const [vRows] = await pool.query('SELECT * FROM vehicles WHERE user_id = ?', [userId]);
+            userVehicles = vRows;
+        } catch (vErr) {
+            console.warn('Vehicle lookup notice in getNextScheduledCharging:', vErr.message);
+        }
+        const vehicleMap = new Map(userVehicles.map(v => [v.id, v]));
+
         const upcomingCandidates = [];
 
         // 1. Check recurring schedules
-        const [recurring] = await pool.query(`
-            SELECT
-                rs.id,
-                rs.station_id,
-                rs.days_of_week,
-                rs.time_of_day,
-                rs.duration_minutes,
-                s.name AS station_name,
-                s.address AS station_address,
-                v.vehicle_name,
-                v.vehicle_model
-            FROM recurring_schedules rs
-            JOIN charging_stations s ON rs.station_id = s.id
-            LEFT JOIN vehicles v ON rs.vehicle_id = v.id
-            WHERE rs.user_id = ? AND rs.status = 'active'
-        `, [userId]);
+        try {
+            const [recurring] = await pool.query(`
+                SELECT
+                    rs.id,
+                    rs.station_id,
+                    rs.vehicle_id,
+                    rs.days_of_week,
+                    rs.time_of_day,
+                    rs.duration_minutes,
+                    s.name AS station_name,
+                    s.address AS station_address
+                FROM recurring_schedules rs
+                JOIN charging_stations s ON rs.station_id = s.id
+                WHERE rs.user_id = ? AND rs.status = 'active'
+            `, [userId]);
 
-        for (const r of recurring) {
-            const nextOccur = calculateNextOccurrence(r.days_of_week, r.time_of_day);
-            if (nextOccur) {
-                upcomingCandidates.push({
-                    type: 'recurring',
-                    schedule_id: r.id,
-                    station_id: r.station_id,
-                    station_name: r.station_name,
-                    station_address: r.station_address,
-                    vehicle_name: r.vehicle_name || r.vehicle_model || 'Registered EV',
-                    duration: `${r.duration_minutes} minutes`,
-                    days: r.days_of_week,
-                    display_time: nextOccur.label,
-                    countdown: nextOccur.countdown,
-                    timestamp: nextOccur.timestamp,
-                    is_recurring: true
-                });
+            for (const r of recurring) {
+                const nextOccur = calculateNextOccurrence(r.days_of_week, r.time_of_day);
+                if (nextOccur) {
+                    const veh = vehicleMap.get(r.vehicle_id) || {};
+                    const vName = veh.vehicle_name || veh.brand || veh.model || 'Registered EV';
+                    upcomingCandidates.push({
+                        type: 'recurring',
+                        schedule_id: r.id,
+                        station_id: r.station_id,
+                        station_name: r.station_name,
+                        station_address: r.station_address,
+                        vehicle_name: vName,
+                        duration: `${r.duration_minutes} minutes`,
+                        days: r.days_of_week,
+                        display_time: nextOccur.label,
+                        countdown: nextOccur.countdown,
+                        timestamp: nextOccur.timestamp,
+                        is_recurring: true
+                    });
+                }
             }
+        } catch (rsErr) {
+            console.warn('recurring_schedules notice in getNextScheduledCharging:', rsErr.message);
         }
 
         // 2. Check confirmed single bookings in the future
-        const [bookings] = await pool.query(`
-            SELECT
-                b.id,
-                b.station_id,
-                b.booking_date,
-                b.start_time,
-                b.end_time,
-                s.name AS station_name,
-                s.address AS station_address,
-                v.vehicle_name,
-                v.vehicle_model
-            FROM bookings b
-            JOIN charging_stations s ON b.station_id = s.id
-            LEFT JOIN vehicles v ON b.vehicle_id = v.id
-            WHERE b.user_id = ?
-              AND b.status IN ('CONFIRMED', 'PENDING', 'ACTIVE')
-              AND b.booking_date >= CURDATE()
-        `, [userId]);
+        try {
+            const [bookings] = await pool.query(`
+                SELECT
+                    b.id,
+                    b.station_id,
+                    b.vehicle_id,
+                    b.booking_date,
+                    b.start_time,
+                    b.end_time,
+                    s.name AS station_name,
+                    s.address AS station_address
+                FROM bookings b
+                JOIN charging_stations s ON b.station_id = s.id
+                WHERE b.user_id = ?
+                  AND b.status IN ('CONFIRMED', 'PENDING', 'ACTIVE')
+                  AND b.booking_date >= CURDATE()
+            `, [userId]);
 
-        const now = new Date();
-        for (const b of bookings) {
-            const dateStr = b.booking_date instanceof Date ? b.booking_date.toISOString().split('T')[0] : String(b.booking_date).substring(0, 10);
-            const timeStr = String(b.start_time).substring(0, 5);
-            const candidateDate = new Date(`${dateStr}T${timeStr}:00`);
-            if (candidateDate.getTime() > now.getTime()) {
-                const time12 = formatTime12(timeStr);
-                const isToday = candidateDate.toDateString() === now.toDateString();
-                const tmrw = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-                const isTmrw = candidateDate.toDateString() === tmrw.toDateString();
-                const label = isToday ? `Today • ${time12}` : (isTmrw ? `Tomorrow • ${time12}` : `${DAY_NAMES[candidateDate.getDay()]} • ${time12}`);
-                const diffMs = candidateDate.getTime() - now.getTime();
-                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                const countdown = diffHours > 0 ? `in ${diffHours}h ${diffMins}m` : `in ${diffMins}m`;
+            const now = new Date();
+            for (const b of bookings) {
+                const dateStr = b.booking_date instanceof Date ? b.booking_date.toISOString().split('T')[0] : String(b.booking_date).substring(0, 10);
+                const timeStr = String(b.start_time).substring(0, 5);
+                const candidateDate = new Date(`${dateStr}T${timeStr}:00`);
+                if (candidateDate.getTime() > now.getTime()) {
+                    const time12 = formatTime12(timeStr);
+                    const isToday = candidateDate.toDateString() === now.toDateString();
+                    const tmrw = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                    const isTmrw = candidateDate.toDateString() === tmrw.toDateString();
+                    const label = isToday ? `Today • ${time12}` : (isTmrw ? `Tomorrow • ${time12}` : `${DAY_NAMES[candidateDate.getDay()]} • ${time12}`);
+                    const diffMs = candidateDate.getTime() - now.getTime();
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    const countdown = diffHours > 0 ? `in ${diffHours}h ${diffMins}m` : `in ${diffMins}m`;
 
-                upcomingCandidates.push({
-                    type: 'single',
-                    booking_id: b.id,
-                    station_id: b.station_id,
-                    station_name: b.station_name,
-                    station_address: b.station_address,
-                    vehicle_name: b.vehicle_name || b.vehicle_model || 'Registered EV',
-                    duration: 'Scheduled session',
-                    display_time: label,
-                    countdown,
-                    timestamp: candidateDate.getTime(),
-                    is_recurring: false
-                });
+                    const veh = vehicleMap.get(b.vehicle_id) || {};
+                    const vName = veh.vehicle_name || veh.brand || veh.model || 'Registered EV';
+
+                    upcomingCandidates.push({
+                        type: 'single',
+                        booking_id: b.id,
+                        station_id: b.station_id,
+                        station_name: b.station_name,
+                        station_address: b.station_address,
+                        vehicle_name: vName,
+                        duration: 'Scheduled session',
+                        display_time: label,
+                        countdown,
+                        timestamp: candidateDate.getTime(),
+                        is_recurring: false
+                    });
+                }
             }
+        } catch (bkErr) {
+            console.warn('bookings notice in next-scheduled:', bkErr.message);
         }
 
         if (upcomingCandidates.length === 0) {

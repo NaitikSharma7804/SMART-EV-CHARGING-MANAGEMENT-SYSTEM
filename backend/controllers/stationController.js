@@ -845,10 +845,15 @@ export const getSmartRecommendations = async (req, res) => {
         // If user is authenticated, query their registered vehicles
         if (userId) {
             try {
-                const [vehicles] = await pool.query(
-                    'SELECT id, vehicle_name, vehicle_model, vehicle_number, connector_type, battery_capacity FROM vehicles WHERE user_id = ? ORDER BY id ASC',
+                const [vehiclesRaw] = await pool.query(
+                    'SELECT * FROM vehicles WHERE user_id = ? ORDER BY id ASC',
                     [userId]
                 );
+                const vehicles = (vehiclesRaw || []).map(v => ({
+                    ...v,
+                    vehicle_name: v.vehicle_name || v.brand || 'My EV',
+                    vehicle_model: v.vehicle_model || v.model || 'Standard'
+                }));
                 if (vehicles && vehicles.length > 0) {
                     if (req.query.vehicle_id) {
                         userVehicle = vehicles.find(v => v.id === Number(req.query.vehicle_id)) || vehicles[0];

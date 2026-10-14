@@ -20,23 +20,32 @@ function getUserId(req) {
 // ============================================================
 
 function formatVehicle(vehicle) {
+    const vName = vehicle.vehicle_name || vehicle.brand || vehicle.make || 'My EV';
+    const vModel = vehicle.vehicle_model || vehicle.model || 'Standard';
+    const vNumber = vehicle.vehicle_number || vehicle.regNumber || vehicle.registration_number || '';
+    const vConnector = vehicle.connector_type || vehicle.connector || 'CCS2';
+
     return {
         id: vehicle.id,
         user_id: vehicle.user_id,
 
         // Database fields
-        vehicle_name: vehicle.vehicle_name,
-        vehicle_number: vehicle.vehicle_number,
-        vehicle_model: vehicle.vehicle_model,
-        connector_type: vehicle.connector_type,
+        vehicle_name: vName,
+        vehicle_number: vNumber,
+        vehicle_model: vModel,
+        brand: vName,
+        model: vModel,
+        connector_type: vConnector,
         battery_capacity: vehicle.battery_capacity,
+        is_default: Boolean(vehicle.is_default),
         created_at: vehicle.created_at,
 
         // Frontend compatibility fields
-        make: vehicle.vehicle_name,
-        model: vehicle.vehicle_model,
-        regNumber: vehicle.vehicle_number,
-        connector: vehicle.connector_type
+        make: vName,
+        name: vName,
+        model: vModel,
+        regNumber: vNumber,
+        connector: vConnector
     };
 }
 
@@ -59,15 +68,7 @@ export const getVehicles = async (req, res) => {
 
         const [vehicles] = await pool.query(
             `
-            SELECT
-                id,
-                user_id,
-                vehicle_name,
-                vehicle_number,
-                vehicle_model,
-                connector_type,
-                battery_capacity,
-                created_at
+            SELECT *
             FROM vehicles
             WHERE user_id = ?
             ORDER BY created_at DESC
@@ -94,10 +95,7 @@ export const getVehicles = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Failed to fetch vehicles.',
-            error:
-                process.env.NODE_ENV !== 'production'
-                    ? error.message
-                    : undefined
+            error: error.message
         });
     }
 };
@@ -129,15 +127,7 @@ export const getVehicleById = async (req, res) => {
 
         const [vehicles] = await pool.query(
             `
-            SELECT
-                id,
-                user_id,
-                vehicle_name,
-                vehicle_number,
-                vehicle_model,
-                connector_type,
-                battery_capacity,
-                created_at
+            SELECT *
             FROM vehicles
             WHERE id = ?
               AND user_id = ?
@@ -167,10 +157,7 @@ export const getVehicleById = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Failed to fetch vehicle.',
-            error:
-                process.env.NODE_ENV !== 'production'
-                    ? error.message
-                    : undefined
+            error: error.message
         });
     }
 };
@@ -291,29 +278,86 @@ export const createVehicle = async (req, res) => {
         // INSERT VEHICLE
         // ----------------------------------------------------
 
-        const [result] = await pool.query(
-            `
-            INSERT INTO vehicles
-            (
-                user_id,
-                vehicle_name,
-                vehicle_number,
-                vehicle_model,
-                connector_type,
-                battery_capacity
-            )
-            VALUES
-            (?, ?, ?, ?, ?, ?)
-            `,
-            [
-                userId,
-                vehicleName,
-                vehicleNumber,
-                vehicleModel,
-                connectorType,
-                batteryCapacity
-            ]
-        );
+        let result;
+        try {
+            [result] = await pool.query(
+                `
+                INSERT INTO vehicles
+                (
+                    user_id,
+                    vehicle_name,
+                    vehicle_number,
+                    vehicle_model,
+                    brand,
+                    model,
+                    connector_type,
+                    battery_capacity
+                )
+                VALUES
+                (?, ?, ?, ?, ?, ?, ?, ?)
+                `,
+                [
+                    userId,
+                    vehicleName,
+                    vehicleNumber,
+                    vehicleModel,
+                    vehicleName,
+                    vehicleModel,
+                    connectorType,
+                    batteryCapacity
+                ]
+            );
+        } catch (colErr) {
+            try {
+                [result] = await pool.query(
+                    `
+                    INSERT INTO vehicles
+                    (
+                        user_id,
+                        brand,
+                        model,
+                        vehicle_number,
+                        connector_type,
+                        battery_capacity
+                    )
+                    VALUES
+                    (?, ?, ?, ?, ?, ?)
+                    `,
+                    [
+                        userId,
+                        vehicleName,
+                        vehicleModel,
+                        vehicleNumber,
+                        connectorType,
+                        batteryCapacity
+                    ]
+                );
+            } catch (err2) {
+                [result] = await pool.query(
+                    `
+                    INSERT INTO vehicles
+                    (
+                        user_id,
+                        vehicle_name,
+                        vehicle_number,
+                        vehicle_model,
+                        connector_type,
+                        battery_capacity
+                    )
+                    VALUES
+                    (?, ?, ?, ?, ?, ?)
+                    `,
+                    [
+                        userId,
+                        vehicleName,
+                        vehicleNumber,
+                        vehicleModel,
+                        connectorType,
+                        batteryCapacity
+                    ]
+                );
+            }
+        }
 
         const vehicleId = result.insertId;
 
@@ -324,15 +368,7 @@ export const createVehicle = async (req, res) => {
 
         const [vehicles] = await pool.query(
             `
-            SELECT
-                id,
-                user_id,
-                vehicle_name,
-                vehicle_number,
-                vehicle_model,
-                connector_type,
-                battery_capacity,
-                created_at
+            SELECT *
             FROM vehicles
             WHERE id = ?
             LIMIT 1
@@ -367,10 +403,7 @@ export const createVehicle = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Failed to add vehicle.',
-            error:
-                process.env.NODE_ENV !== 'production'
-                    ? error.message
-                    : undefined
+            error: error.message
         });
     }
 };
@@ -533,28 +566,82 @@ export const updateVehicle = async (req, res) => {
         // UPDATE
         // ----------------------------------------------------
 
-        await pool.query(
-            `
-            UPDATE vehicles
-            SET
-                vehicle_name = ?,
-                vehicle_number = ?,
-                vehicle_model = ?,
-                connector_type = ?,
-                battery_capacity = ?
-            WHERE id = ?
-              AND user_id = ?
-            `,
-            [
-                vehicleName,
-                vehicleNumber,
-                vehicleModel,
-                connectorType,
-                batteryCapacity,
-                vehicleId,
-                userId
-            ]
-        );
+        try {
+            await pool.query(
+                `
+                UPDATE vehicles
+                SET
+                    vehicle_name = ?,
+                    vehicle_number = ?,
+                    vehicle_model = ?,
+                    brand = ?,
+                    model = ?,
+                    connector_type = ?,
+                    battery_capacity = ?
+                WHERE id = ?
+                  AND user_id = ?
+                `,
+                [
+                    vehicleName,
+                    vehicleNumber,
+                    vehicleModel,
+                    vehicleName,
+                    vehicleModel,
+                    connectorType,
+                    batteryCapacity,
+                    vehicleId,
+                    userId
+                ]
+            );
+        } catch (uErr) {
+            try {
+                await pool.query(
+                    `
+                    UPDATE vehicles
+                    SET
+                        brand = ?,
+                        model = ?,
+                        vehicle_number = ?,
+                        connector_type = ?,
+                        battery_capacity = ?
+                    WHERE id = ?
+                      AND user_id = ?
+                    `,
+                    [
+                        vehicleName,
+                        vehicleModel,
+                        vehicleNumber,
+                        connectorType,
+                        batteryCapacity,
+                        vehicleId,
+                        userId
+                    ]
+                );
+            } catch (uErr2) {
+                await pool.query(
+                    `
+                    UPDATE vehicles
+                    SET
+                        vehicle_name = ?,
+                        vehicle_number = ?,
+                        vehicle_model = ?,
+                        connector_type = ?,
+                        battery_capacity = ?
+                    WHERE id = ?
+                      AND user_id = ?
+                    `,
+                    [
+                        vehicleName,
+                        vehicleNumber,
+                        vehicleModel,
+                        connectorType,
+                        batteryCapacity,
+                        vehicleId,
+                        userId
+                    ]
+                );
+            }
+        }
 
 
         // ----------------------------------------------------
@@ -563,15 +650,7 @@ export const updateVehicle = async (req, res) => {
 
         const [vehicles] = await pool.query(
             `
-            SELECT
-                id,
-                user_id,
-                vehicle_name,
-                vehicle_number,
-                vehicle_model,
-                connector_type,
-                battery_capacity,
-                created_at
+            SELECT *
             FROM vehicles
             WHERE id = ?
             LIMIT 1
@@ -594,10 +673,7 @@ export const updateVehicle = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Failed to update vehicle.',
-            error:
-                process.env.NODE_ENV !== 'production'
-                    ? error.message
-                    : undefined
+            error: error.message
         });
     }
 };
@@ -713,10 +789,7 @@ export const deleteVehicle = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Failed to delete vehicle.',
-            error:
-                process.env.NODE_ENV !== 'production'
-                    ? error.message
-                    : undefined
+            error: error.message
         });
     }
 };
