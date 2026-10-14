@@ -1584,14 +1584,7 @@ export const getMyBookings = async (
                     ) AS payment_record_status,
 
 
-                    (
-                        SELECT
-                            p3.payment_method
-                        FROM payments p3
-                        WHERE p3.booking_id = b.id
-                        ORDER BY p3.id DESC
-                        LIMIT 1
-                    ) AS payment_method,
+                    'Razorpay' AS payment_method,
 
 
                     (

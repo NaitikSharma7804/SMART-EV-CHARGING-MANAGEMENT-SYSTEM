@@ -85,11 +85,12 @@ if (process.env.DATABASE_URL) {
                 await connection.query('UPDATE vehicles SET model = vehicle_model WHERE model IS NULL AND vehicle_model IS NOT NULL');
             } catch (e) {}
 
-            // 2. Ensure bookings table has optional payment & slot columns
+            // 2. Ensure bookings & payments tables have optional payment & slot columns
             await safeAdd('ALTER TABLE bookings ADD COLUMN razorpay_order_id VARCHAR(100) NULL');
             await safeAdd('ALTER TABLE bookings ADD COLUMN razorpay_payment_id VARCHAR(100) NULL');
             await safeAdd("ALTER TABLE bookings ADD COLUMN payment_status VARCHAR(50) DEFAULT 'Pending'");
             await safeAdd('ALTER TABLE bookings ADD COLUMN slot_id INT NULL');
+            await safeAdd("ALTER TABLE payments ADD COLUMN payment_method VARCHAR(50) DEFAULT 'Razorpay'");
 
             // 3. Ensure recurring_schedules table exists
             await connection.query(`
