@@ -1,6 +1,5 @@
-// backend/middleware/authMiddleware.js
-
 import jwt from "jsonwebtoken";
+import pool from '../config/db.js';
 
 /*
 =========================================================
@@ -17,7 +16,7 @@ req.user = decoded JWT payload
 =========================================================
 */
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
     try {
         // Get Authorization header
         const authHeader = req.headers.authorization;
@@ -55,6 +54,26 @@ const authenticate = (req, res, next) => {
 
         // Store decoded user information
         req.user = decoded;
+
+        // Seamless cross-environment user alignment:
+        // If ID in token (e.g. from cloud DB) doesn't exist in local DB, resolve user ID by email
+        if (req.user && req.user.email) {
+            try {
+                const [dbUser] = await pool.query('SELECT id, role FROM users WHERE id = ?', [req.user.id]);
+                if (!dbUser || dbUser.length === 0) {
+                    const [emailUser] = await pool.query('SELECT id, role FROM users WHERE email = ?', [req.user.email]);
+                    if (emailUser && emailUser.length > 0) {
+                        req.user.id = emailUser[0].id;
+                        req.user.userId = emailUser[0].id;
+                        if (emailUser[0].role) {
+                            req.user.role = String(emailUser[0].role).toUpperCase();
+                        }
+                    }
+                }
+            } catch (syncErr) {
+                // Ignore DB lookup error during alignment
+            }
+        }
 
         console.log("✅ Authenticated user:", req.user);
 

@@ -4666,7 +4666,10 @@
            CONFIGURATION
         ========================================================= */
 
-        const DASHBOARD_API = "https://ev-charge-hub-api.onrender.com";
+        const DASHBOARD_API = (
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1'
+        ) ? 'http://localhost:5000' : 'https://ev-charge-hub-api.onrender.com';
 
         const REFRESH_INTERVAL =
             5000;

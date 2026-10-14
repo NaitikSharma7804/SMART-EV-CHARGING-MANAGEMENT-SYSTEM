@@ -16,7 +16,10 @@
 (function () {
     'use strict';
 
-    const API_BASE = 'https://ev-charge-hub-api.onrender.com';
+    const API_BASE = (
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ) ? 'http://localhost:5000' : 'https://ev-charge-hub-api.onrender.com';
     const STORAGE_KEY = 'ev_notifications_data';
 
     // Default notifications matching user's exact specification

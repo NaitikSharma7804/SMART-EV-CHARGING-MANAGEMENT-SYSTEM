@@ -95,6 +95,8 @@ if (process.env.DATABASE_URL) {
             await safeAdd("ALTER TABLE payments ADD COLUMN payment_method VARCHAR(50) DEFAULT 'Razorpay'");
             await safeAdd("ALTER TABLE payments ADD COLUMN user_id INT NULL");
             await safeAdd("ALTER TABLE payments ADD COLUMN currency VARCHAR(10) DEFAULT 'INR'");
+            await safeAdd("ALTER TABLE payments ADD COLUMN razorpay_signature VARCHAR(255) NULL");
+            await safeAdd("ALTER TABLE payments ADD COLUMN razorpay_order_id VARCHAR(100) NULL");
 
             // 3. Ensure recurring_schedules table exists
             await connection.query(`

@@ -1351,29 +1351,46 @@ export const verifyPayment = async (
             // UPDATE PAYMENT
             // =================================================
 
-            await connection.query(
-                `
-                UPDATE payments
-
-                SET
-
-                    razorpay_payment_id = ?,
-
-                    razorpay_signature = ?,
-
-                    status = 'Success',
-
-                    payment_method = ?
-
-                WHERE id = ?
-                `,
-                [
-                    razorpay_payment_id,
-                    razorpay_signature,
-                    payment_method || null,
-                    payment.id
-                ]
-            );
+            try {
+                await connection.query(
+                    `
+                    UPDATE payments
+                    SET
+                        razorpay_payment_id = ?,
+                        razorpay_signature = ?,
+                        status = 'Success',
+                        payment_method = ?
+                    WHERE id = ?
+                    `,
+                    [
+                        razorpay_payment_id,
+                        razorpay_signature,
+                        payment_method || null,
+                        payment.id
+                    ]
+                );
+            } catch (payUpdateErr) {
+                if (payUpdateErr.message && payUpdateErr.message.includes('razorpay_signature')) {
+                    console.warn('[verifyPayment] razorpay_signature column not in payments table, updating without it.');
+                    await connection.query(
+                        `
+                        UPDATE payments
+                        SET
+                            razorpay_payment_id = ?,
+                            status = 'Success',
+                            payment_method = ?
+                        WHERE id = ?
+                        `,
+                        [
+                            razorpay_payment_id,
+                            payment_method || null,
+                            payment.id
+                        ]
+                    );
+                } else {
+                    throw payUpdateErr;
+                }
+            }
 
 
             // =================================================
