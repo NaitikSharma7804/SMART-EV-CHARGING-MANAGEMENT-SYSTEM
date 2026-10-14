@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /backend/
 
-Sitemap: https://ev-charge-hub-rwga.onrender.com/
+Sitemap: https://ev-charge-hub-api.onrender.com/

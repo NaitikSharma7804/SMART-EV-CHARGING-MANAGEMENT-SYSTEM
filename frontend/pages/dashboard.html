@@ -4642,7 +4642,7 @@
            EV CHARGE HUB DASHBOARD
            
            BACKEND:
-           http://localhost:5000/api
+           https://ev-charge-hub-api.onrender.com
 
            BOOKINGS:
            GET /bookings/my-bookings
@@ -4666,10 +4666,7 @@
            CONFIGURATION
         ========================================================= */
 
-        const DASHBOARD_API =
-            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                ? "http://localhost:5000/api"
-                : "/api";
+        const DASHBOARD_API = "https://ev-charge-hub-api.onrender.com";
 
         const REFRESH_INTERVAL =
             5000;

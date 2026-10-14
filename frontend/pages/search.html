@@ -1907,9 +1907,7 @@
             try {
                 // Fetch full city & expressway coverage so user can filter instantly across 5km, 10km, 25km, or all
                 const radiusParam = 100;
-                const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                    ? 'http://localhost:5000/api'
-                    : '/api';
+                const apiBase = 'https://ev-charge-hub-api.onrender.com';
                 const url = `${apiBase}/stations?lat=${userLat}&lng=${userLng}&radius=${radiusParam}`;
                 
                 const response = await fetch(url);
@@ -1926,7 +1924,7 @@
                             <i data-lucide="server-crash"></i>
                         </div>
                         <strong style="color:#991b1b;">Server connection error</strong>
-                        <p>Make sure your backend server is running on port 5000 and try again.</p>
+                        <p>Make sure the backend server is reachable and try again.</p>
                         <button type="button" class="reset-filters-inline-btn" onclick="loadStations()">
                             <i data-lucide="rotate-ccw"></i> Retry
                         </button>
